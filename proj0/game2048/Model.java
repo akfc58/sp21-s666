@@ -1,11 +1,12 @@
 package game2048;
 
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author liang
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -109,10 +110,24 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
-        // TODO: Modify this.board (and perhaps this.score) to account
+        // Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+
+        int max = this.board.size();
+        // iterate through every row of the board THIS.BOARD.
+        for (int row = max - 1; row >= 0; row = row - 1) {
+            ArrayList<Tile> thisRow = iterThroughARow(row, this.board);
+            // deal with every tile T in a row independently.
+            for (Tile t : thisRow) {
+                if (t != null && desiredRow(t, this.board) != t.row()){
+                    boolean haveMerged = this.board.move(t.col(),desiredRow(t, this.board), t);
+                    System.out.println(haveMerged);
+                    changed = true;
+                }
+            }
+        }
+
 
         checkGameOver();
         if (changed) {
@@ -120,6 +135,38 @@ public class Model extends Observable {
         }
         return changed;
     }
+
+    /** iterate through a row with row number ROW. return an array of a tile on board B.*/
+    private ArrayList<Tile> iterThroughARow(int row,Board b) {
+        ArrayList<Tile> result = new ArrayList<Tile>();
+        Tile[] t = new Tile[]{};
+        for (int col = 0; col < b.size(); col = col + 1) {
+            result.add(b.tile(col, row));
+        }
+        return result;
+    }
+
+    /** given a Tile T in a column on board B, return the ROW that it can goes to.
+     * consider merging.*/
+    public int desiredRow(Tile t, Board b) {
+        int row = t.row();
+        int increase = 0;
+        for (int i = row + 1; i < b.size(); i = i + 1) {
+            Tile potentialDestination = b.tile(t.col(), i);
+            if (potentialDestination != null && t.value() == potentialDestination.value()){
+                increase = increase + 1;
+                System.out.println(t.col() + "des" + i);
+                this.score = t.value() * 2;
+            }
+            if (potentialDestination == null){
+                increase = increase + 1;
+            }
+        }
+        return t.row() + increase;
+    }
+
+
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -137,7 +184,15 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int max = b.size();
+        for (int i = 0; i < max; i = i + 1) {
+            for (int j = 0; j < max; j = j + 1) {
+                if (b.tile(i, j) == null) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -147,7 +202,14 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        int maxroll = b.size();
+        for (int i = 0; i < maxroll; i = i + 1) {
+            for (int j = 0; j < maxroll; j = j + 1) {
+                if (b.tile(i, j) != null && b.tile(i, j).value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,10 +220,64 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        // 1.have empty spaces;
+        // 2.there is at least one tile's adjacent that has same value as itself
+        // on board.
+
+        //use exist function.
+        if (emptySpaceExists(b)) {
+            return true;
+        }
+        //iterate through all tiles.
+        int max = b.size();
+        for (int i = 0; i < max; i = i + 1) {
+            for (int j = 0; j < max; j = j + 1) {
+                //for every tile on board, iterate through it's adjacent tiles.
+                for (Tile x : Adjacent(b.tile(i,j), b)) {
+                    //every adjacent function returns either 4 adjacent tiles or
+                    //the tile itself. Get rid of tile it self, and compare.
+                    if (x != b.tile(i, j)) {
+                        if (x.value() == b.tile(i, j).value()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
+    /** Returns all adjacent tiles of a tile on board as a array.
+     * if the tile is on the edge, the result contains the tile itself. */
+    private static Tile[] Adjacent(Tile tile, Board b) {
+        int x = tile.col();
+        int y = tile.row();
+        //all cord of adjacent tiles
+        int upx = x;
+        int upy = y + 1;
+        int downx = x;
+        int downy = y - 1;
+        int leftx = x - 1;
+        int lefty = y;
+        int rightx = x + 1;
+        int righty = y;
+        //if index out of board, just select the tile in the middle(self).
+        if (upy >= b.size()) {
+            upy = y;
+        }
+        if (downy < 0) {
+            downy = y;
+        }
+        if (leftx < 0) {
+            leftx = x;
+        }
+        if (rightx >= b.size()) {
+            rightx = x;
+        }
+        Tile[] allAdjacent = new Tile[]{b.tile(upx,upy), b.tile(downx, downy),
+                b.tile(leftx, lefty), b.tile(rightx,righty)};
+        return allAdjacent;
+    }
 
     @Override
      /** Returns the model as a string, used for debugging. */
