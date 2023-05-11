@@ -1,6 +1,6 @@
 package game2048;
 
-import java.util.ArrayList;
+
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -108,61 +108,63 @@ public class Model extends Observable {
      *    and the trailing tile does not.
      * */
     public boolean tilt(Side side) {
+        this.board.setViewingPerspective(side);
         boolean changed;
         changed = false;
+
         // Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
-        int max = this.board.size();
-        // iterate through every row of the board THIS.BOARD.
-        for (int row = max - 1; row >= 0; row = row - 1) {
-            ArrayList<Tile> thisRow = iterThroughARow(row, this.board);
-            // deal with every tile T in a row independently.
-            for (Tile t : thisRow) {
-                if (t != null && desiredRow(t, this.board) != t.row()){
-                    boolean haveMerged = this.board.move(t.col(),desiredRow(t, this.board), t);
-                    System.out.println(haveMerged);
-                    changed = true;
+        // for every column from right to left.
+        for (int col = 3; col >= 0; col = col -1) {
+            // for every row in a single col top-down.
+            for (int row =3; row >= 0; row = row - 1) {
+                // move the tile if it exists.
+                if (this.board.tile(col, row) != null) {
+                    if (moveToDestination(col, row)) {
+                        changed = true;
+                    }
                 }
+
             }
         }
-
-
         checkGameOver();
         if (changed) {
             setChanged();
         }
+
+        this.board.setViewingPerspective(Side.NORTH);
         return changed;
     }
 
-    /** iterate through a row with row number ROW. return an array of a tile on board B.*/
-    private ArrayList<Tile> iterThroughARow(int row,Board b) {
-        ArrayList<Tile> result = new ArrayList<Tile>();
-        Tile[] t = new Tile[]{};
-        for (int col = 0; col < b.size(); col = col + 1) {
-            result.add(b.tile(col, row));
-        }
-        return result;
-    }
+    /** given a Tile in THIS.BOARD.TILE(col, row), move that tile to destination,
+     * update THIS.SCORE.*/
+    public boolean moveToDestination(int col, int row) {
+        int desRow = row;
+        boolean moved = false;
+        boolean Merged = false;
+        for (int j = row + 1; j <= 3; j = j + 1) {
+            if (this.board.tile(col, j) == null) {
+                desRow = desRow + 1;
+            } else {
+                if (this.board.tile(col, j).value() == this.board.tile(col, row).value()) {
+                    desRow = desRow + 1;
 
-    /** given a Tile T in a column on board B, return the ROW that it can goes to.
-     * consider merging.*/
-    public int desiredRow(Tile t, Board b) {
-        int row = t.row();
-        int increase = 0;
-        for (int i = row + 1; i < b.size(); i = i + 1) {
-            Tile potentialDestination = b.tile(t.col(), i);
-            if (potentialDestination != null && t.value() == potentialDestination.value()){
-                increase = increase + 1;
-                System.out.println(t.col() + "des" + i);
-                this.score = t.value() * 2;
-            }
-            if (potentialDestination == null){
-                increase = increase + 1;
+                }
+                // once there is a tile, there's no need to loop.
+                break;
             }
         }
-        return t.row() + increase;
+        if (desRow > row){
+            moved = true;
+        }
+        if (moved) {
+            Merged = this.board.move(col, desRow, this.board.tile(col, row));
+        }
+        if (Merged){
+            this.score = this.score + this.board.tile(col, desRow).value();
+        }
+        return moved;
     }
 
 
