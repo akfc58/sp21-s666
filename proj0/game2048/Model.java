@@ -25,6 +25,7 @@ public class Model extends Observable {
 
     /** Largest piece value. */
     public static final int MAX_PIECE = 2048;
+    public static boolean HAVE_MERGED = false;
 
     /** A new 2048 game on a board of size SIZE with no pieces
      *  and score 0. */
@@ -148,13 +149,17 @@ public class Model extends Observable {
                 desRow = desRow + 1;
             } else {
                 if (this.board.tile(col, j).value() == this.board.tile(col, row).value()) {
+                    desRow = desRow;
+                }
+                if (!HAVE_MERGED && this.board.tile(col, j).value() == this.board.tile(col, row).value()) {
                     desRow = desRow + 1;
-
                 }
                 // once there is a tile, there's no need to loop.
                 break;
             }
         }
+        System.out.println(HAVE_MERGED);
+        System.out.println(desRow);
         if (desRow > row){
             moved = true;
         }
@@ -163,6 +168,9 @@ public class Model extends Observable {
         }
         if (Merged){
             this.score = this.score + this.board.tile(col, desRow).value();
+            HAVE_MERGED = true;
+        } else {
+            HAVE_MERGED = false;
         }
         return moved;
     }
