@@ -38,10 +38,10 @@ public class TimeAList {
         AList<Integer> Ns = new AList<>();
         AList<Double> times = new AList<>();
         AList<Integer> opCounts = new AList<>();
-        int[] testPoint = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 1000000};
+        int[] testPoint = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};
         Stopwatch sw = new Stopwatch();
         int count = 0;
-        while (testAlist.size() <= 1000000) {
+        while (testAlist.size() <= 128000) {
             testAlist.addLast(1);
             count += 1;
             if (numInArray(testAlist.size(),testPoint)){

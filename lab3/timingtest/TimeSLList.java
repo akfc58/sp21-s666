@@ -35,7 +35,7 @@ public class TimeSLList {
         AList<Integer> Ns = new AList<>();
         AList<Double> times = new AList<>();
         AList<Integer> opCounts = new AList<>();
-        int[] testPoint = {1000, 2000, 4000, 8000, 16000, 32000, 64000};
+        int[] testPoint = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};
         for (int i = 0; i <testPoint.length; i += 1) {
             for (int j = 0; j <= testPoint[i]; j += 1) {
                 testSLlist.addLast(j);
