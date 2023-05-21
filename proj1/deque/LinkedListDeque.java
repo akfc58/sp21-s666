@@ -93,4 +93,29 @@ public class LinkedListDeque<Loch> {
         }
         System.out.println(); // Print a blank line after the deque.
     }
+
+    public Loch get(int index) {
+        if (isEmpty()) {
+            return null;
+        }
+        StuffNode p = sentinel;
+        for (int i = 0; i <= index;i += 1) {
+            p = p.next;
+        }
+        return p.item;
+    }
+
+    private Loch getRecursiveHelper(int index, StuffNode p, int i) {
+        if (i == index){
+            return p.item;
+        }
+        return getRecursiveHelper(index, p.next, i + 1);
+    }
+
+    public Loch getRecursive(int index) {
+        if (isEmpty()) {
+            return null;
+        }
+        return getRecursiveHelper(index, sentinel.next, 0);
+    }
 }

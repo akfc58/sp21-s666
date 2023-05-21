@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 
-/** Performs some basic linked list tests. */
+/** Performs some linked list based deque tests. */
 public class LinkedListDequeTest {
 
     @Test
@@ -149,6 +149,38 @@ public class LinkedListDequeTest {
         for (double i = 999999; i > 500000; i--) {
             assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
         }
+    }
 
+    @Test
+    /** Test get and get recursive. */
+    public void getTest() {
+        // Test 0 or 1 item.
+        LinkedListDeque<Integer> oneItem = new LinkedListDeque<>(1); //Test 1 item deque.
+        assertEquals(1,(int) oneItem.get(0));
+        LinkedListDeque<Integer> blank = new LinkedListDeque<>(); // Test empty deque.
+        assertEquals(null, blank.get(0));
+
+        // Test big deque.
+        LinkedListDeque<Integer> bigDeque = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            bigDeque.addLast(i);
+        }
+        assertEquals(99,(int) bigDeque.get(99));
+        assertEquals(12,(int) bigDeque.get(12));
+        assertEquals(0,(int) bigDeque.get(0));
+        bigDeque.printDeque();
+    }
+
+    @Test
+    /** Test recursive version of get. */
+    public void getRecursiveTest() {
+        LinkedListDeque<Integer> bigDeque = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            bigDeque.addLast(i);
+        }
+        assertEquals(99,(int) bigDeque.getRecursive(99));
+        assertEquals(12,(int) bigDeque.getRecursive(12));
+        assertEquals(0,(int) bigDeque.getRecursive(0));
+        bigDeque.printDeque();
     }
 }
