@@ -69,7 +69,7 @@ public class ArrayDeque<Loch> {
         if (isEmpty()) {
             return null;
         }
-        if (nextFirst == items.length) {
+        if (nextFirst == items.length - 1) {
             nextFirst = 0;
         } else {
             nextFirst += 1;
