@@ -1,8 +1,5 @@
 package deque;
 
-import jdk.jshell.EvalException;
-import net.sf.saxon.om.Item;
-
 public class ArrayDeque<Loch> {
     private Loch[] items;
     private int size;
