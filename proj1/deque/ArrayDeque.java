@@ -14,7 +14,7 @@ public class ArrayDeque<Loch> {
         items = (Loch[]) new Object[8];
         items[5] = x;
         nextLast += 1;
-        size += 1;
+        size = 1;
     }
 
     public int size() {
@@ -22,7 +22,7 @@ public class ArrayDeque<Loch> {
     }
 
     public boolean isEmpty() {
-        if (nextFirst == 4 && nextLast == 5) {
+        if (size == 0) {
             return true;
         }
         return false;

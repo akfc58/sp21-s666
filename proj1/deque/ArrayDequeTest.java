@@ -37,18 +37,16 @@ public class ArrayDequeTest {
     }
 
     @Test
-    /** Test removeLast. */
-    public void removeLastTest() {
+    /** Test basic remove. */
+    public void removeTest() {
         // Test remove items[0].
         ArrayDeque<String> t1 = new ArrayDeque<>("is");
         t1.addLast("a");
         t1.addLast("example");
         t1.addLast("sentence.");
         t1.addFirst("this");
-        t1.printDeque();
-        System.out.println(t1.removeLast());
+        t1.removeLast();
         assertEquals(4, t1.size());
-        t1.printDeque();
         t1.addLast("new sentence.");
         t1.printDeque();
 
@@ -58,8 +56,7 @@ public class ArrayDequeTest {
             t2.addFirst(i);
         }
         assertEquals(3, t2.size());
-        t2.printDeque();
-        System.out.println(t2.removeLast());
+        t2.removeLast();
         assertEquals(2, t2.size());
         t2.printDeque();
 
@@ -69,12 +66,25 @@ public class ArrayDequeTest {
             t3.addLast(i);
         }
         assertEquals(3, t3.size());
-        t3.printDeque();
-        System.out.println(t3.removeLast());
+        t3.removeFirst();
         assertEquals(2, t3.size());
-        t3.printDeque();
         t3.addLast(999);
         t3.addLast(888);
         t3.printDeque();
+    }
+
+    @Test
+    /** Fill up, remove, check is empty, and fill up again. */
+    public void fillUpRemoveFillUpAgain () {
+        ArrayDeque<Integer> t2 = new ArrayDeque<>();
+        for (int i = 0; i <= 7; i += 1){
+            t2.addFirst(i);
+        }
+        t2.printDeque();
+
+        for (int i = 0; i <= 7; i += 1) {
+            t2.removeLast();
+        }
+        assertTrue(t2.isEmpty());
     }
 }
