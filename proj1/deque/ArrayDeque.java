@@ -211,7 +211,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (obj == null) {
             return false;
         }
-        if(!((obj instanceof Deque) && (this instanceof Deque))) {
+        if (!((obj instanceof Deque) && (this instanceof Deque))) {
             return false;
         }
         Deque<T> o = (Deque<T>) obj;
