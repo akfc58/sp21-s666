@@ -18,6 +18,6 @@ public class LinkedListDequeTest {
         t2.addFirst("last");
         t2.addFirst("middle");
         t2.addFirst("first");
-        assertTrue(t1.equals(t2));
+        assertEquals(t1, t2);
     }
 }

@@ -131,10 +131,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
         @Override
         public boolean hasNext() {
-            if (wisPos < size) {
-                return true;
-            }
-            return false;
+            return wisPos < size;
         }
     }
 
