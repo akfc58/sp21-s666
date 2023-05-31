@@ -182,4 +182,17 @@ public class LinkedListDequeTest {
         assertEquals(0, (int) bigDeque.getRecursive(0));
         bigDeque.printDeque();
     }
+
+    @Test
+    public void equalsTest() {
+        LinkedListDeque<String> t1 = new LinkedListDeque<>();
+        t1.addFirst("last");
+        t1.addFirst("middle");
+        t1.addFirst("first");
+        LinkedListDeque<String> t2 = new LinkedListDeque<>();
+        t2.addFirst("last");
+        t2.addFirst("middle");
+        t2.addFirst("first");
+        assertTrue(t1.equals(t2));
+    }
 }

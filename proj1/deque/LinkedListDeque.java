@@ -147,12 +147,11 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
         }
     }
 
-    public boolean contains(T x) {
+    private boolean contains(T x) {
         for (int index = 0; index < size; index++) {
             if (get(index).equals(x)) {  // must use equals.
                 return true;
             }
-            return false;
         }
         return false;
     }
