@@ -53,10 +53,7 @@ public class LinkedListDeque<Loch> {
     }
 
     public boolean isEmpty() {
-        if (sentinel.next == sentinel) {
-            return true;
-        }
-        return false;
+        return sentinel.next == sentinel;
     }
 
     public int size() {

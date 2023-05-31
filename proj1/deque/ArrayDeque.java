@@ -22,10 +22,7 @@ public class ArrayDeque<Loch> {
     }
 
     public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        }
-        return false;
+        return size == 0;
     }
 
     public void addFirst(Loch x) {
@@ -61,8 +58,7 @@ public class ArrayDeque<Loch> {
         }
         size -= 1;
         // return the removed last value where nextLast is pointing at after remove.
-        Loch value = items[nextLast];
-        return value;
+        return items[nextLast];
     }
 
     public Loch removeFirst() {
@@ -75,8 +71,7 @@ public class ArrayDeque<Loch> {
             nextFirst += 1;
         }
         size -= 1;
-        Loch value = items[nextFirst];
-        return value;
+        return items[nextFirst];
     }
 
     public Loch get(int index) {
