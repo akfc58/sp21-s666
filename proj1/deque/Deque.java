@@ -20,4 +20,6 @@ public interface Deque<T> {
     T removeLast();
 
     T get(int index);
+
+    boolean contains(T x);
 }

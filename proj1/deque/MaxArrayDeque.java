@@ -9,10 +9,6 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         nc = c;
     }
 
-    public MaxArrayDeque() {
-
-    }
-
     public T max() {
         return max(nc);
     }

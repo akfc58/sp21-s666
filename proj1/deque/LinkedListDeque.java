@@ -2,14 +2,14 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     private class StuffNode {
         private T item;
         private StuffNode prev;
         private StuffNode next;
 
-        public StuffNode(T i, StuffNode p, StuffNode n) {
+        StuffNode(T i, StuffNode p, StuffNode n) {
             item = i;
             prev = p;
             next = n;
@@ -25,15 +25,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
         sentinel.prev = sentinel;
         sentinel.next = sentinel;
         size = 0;
-    }
-
-    /** Creates a SINGLE item Deque. */
-    public LinkedListDeque(T x) {
-        sentinel = new StuffNode(null, null, null); // How to fill in sentinel's item?
-        StuffNode first = new StuffNode(x, sentinel, sentinel);
-        sentinel.prev = first;
-        sentinel.next = first;
-        size = 1;
     }
 
     @Override
@@ -128,7 +119,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
     private class LinkedListDequeIterator implements Iterator<T> {
         int wisPos;
 
-        public LinkedListDequeIterator() {
+        LinkedListDequeIterator() {
             wisPos = 0;
         }
         @Override
@@ -140,14 +131,14 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
 
         @Override
         public boolean hasNext() {
-            if (wisPos < size){
+            if (wisPos < size) {
                 return true;
             }
             return false;
         }
     }
 
-    private boolean contains(T x) {
+    public boolean contains(T x) {
         for (int index = 0; index < size; index++) {
             if (get(index).equals(x)) {  // must use equals.
                 return true;
@@ -164,10 +155,10 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T>{
         if (obj == null) {
             return false;
         }
-        if(!(obj instanceof Deque) || !(this instanceof Deque)) {
+        if(!((obj instanceof Deque) && (this instanceof Deque))) {
             return false;
         }
-        LinkedListDeque<T> o = (LinkedListDeque<T>) obj;
+        Deque<T> o = (Deque<T>) obj;
         if (o.size() != this.size()) {
             return false;
         }
