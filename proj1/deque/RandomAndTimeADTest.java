@@ -10,7 +10,7 @@ public class RandomAndTimeADTest {
     @Test
     public void randomizedArrayDequeTest() {
         ArrayDeque<Integer> LLD1 = new ArrayDeque<>();
-        ArrayDeque<Integer> LLD2 =new ArrayDeque<>();
+        ArrayDeque<Integer> LLD2 = new ArrayDeque<>();
         int N = 50000000;
         for (int i = 0; i < N; i += 1) {
             int operationNumber = StdRandom.uniform(0, 6);
@@ -40,7 +40,7 @@ public class RandomAndTimeADTest {
                     assertEquals(LLD1.removeFirst(), LLD2.removeFirst());
                 }
             } else if (operationNumber == 5) {
-                if ( LLD1.size() > 0) {
+                if (LLD1.size() > 0) {
                     int index = StdRandom.uniform(0, LLD1.size());
                     assertEquals(LLD1.get(index), LLD2.get(index));
                 }
@@ -48,7 +48,8 @@ public class RandomAndTimeADTest {
         }
     }
 
-    private static void printTimingTable(ArrayDeque<Integer> Ns, ArrayDeque<Double> times, ArrayDeque<Integer> opCounts) {
+    private static void printTimingTable(ArrayDeque<Integer> Ns, ArrayDeque<Double> times,
+                                         ArrayDeque<Integer> opCounts) {
         System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
         System.out.printf("------------------------------------------------------------\n");
         for (int i = 0; i < Ns.size(); i += 1) {
@@ -80,13 +81,13 @@ public class RandomAndTimeADTest {
         ArrayDeque<Double> times = new ArrayDeque<>();
         ArrayDeque<Integer> opCounts = new ArrayDeque<>();
         int[] testPoint = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 512000};
-        for (int i = 0; i <testPoint.length; i += 1) {
+        for (int i = 0; i < testPoint.length; i += 1) {
             for (int j = 0; j <= testPoint[i]; j += 1) {
                 testSLlist.addLast(j);
             }
             Stopwatch sw = new Stopwatch();
             for (int k = 0; k < 10000; k += 1) {
-                testSLlist.get(testSLlist.size()-1);
+                testSLlist.get(testSLlist.size() - 1);
             }
             Ns.addLast(testPoint[i]);
             times.addLast(sw.elapsedTime());

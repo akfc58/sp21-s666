@@ -1,17 +1,17 @@
 package deque;
 
-public class ArrayDeque<Loch> implements Deque<Loch> {
-    private Loch[] items;
+public class ArrayDeque<T> implements Deque<T> {
+    private T[] items;
     private int size;
     private int nextFirst = 4;
     private int nextLast = 5;
 
     public ArrayDeque() {
-        items = (Loch[]) new Object[8]; //Original length is 8.
+        items = (T[]) new Object[8]; //Original length is 8.
         size = 0;
     }
-    public ArrayDeque(Loch x) {
-        items = (Loch[]) new Object[8];
+    public ArrayDeque(T x) {
+        items = (T[]) new Object[8];
         items[5] = x;
         nextLast += 1;
         size = 1;
@@ -32,7 +32,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
      * @param cap
      */
     private void resize(int cap) {
-        Loch[] res = (Loch[]) new Object[cap];
+        T[] res = (T[]) new Object[cap];
         System.arraycopy(items, 0, res, 0, nextLast);
         int lengthOfLastPart = items.length - 1 - nextFirst;
         System.arraycopy(items, nextFirst + 1, res, res.length - lengthOfLastPart, lengthOfLastPart);
@@ -41,7 +41,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
     }
 
     private void cutSize(int cap) {
-        Loch[] res = (Loch[]) new Object[cap];
+        T[] res = (T[]) new Object[cap];
         boolean nextLastInFront = false;
         if (nextFirst < nextLast) {
             int diff = nextFirst - 5 + 1; // difference between old long Array start index with new result Array.
@@ -68,7 +68,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public void addFirst(Loch x) {
+    public void addFirst(T x) {
         if (nextFirst == nextLast) {
             resize(items.length * 2);
         }
@@ -83,7 +83,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public void addLast(Loch x) {
+    public void addLast(T x) {
         if (nextFirst == nextLast) {
             resize(items.length * 2);
         }
@@ -98,7 +98,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public Loch removeLast() {
+    public T removeLast() {
         //if (size < items.length / 2 && size >= 7) {
         //    cutSize(items.length / 2);
         //}
@@ -112,7 +112,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
         } else {
             nextLast = nextLast - 1;
         }
-        Loch removed = items[nextLast];
+        T removed = items[nextLast];
         items[nextLast] = null;
         size -= 1;
         // return the removed last value where nextLast is pointing at after remove.
@@ -120,7 +120,7 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public Loch removeFirst() {
+    public T removeFirst() {
         //if (size < items.length / 2 && size >= 7) {
         //    cutSize(items.length / 2);
         //}
@@ -133,13 +133,13 @@ public class ArrayDeque<Loch> implements Deque<Loch> {
             nextFirst += 1;
         }
         size -= 1;
-        Loch removed = items[nextFirst];
+        T removed = items[nextFirst];
         items[nextFirst] = null;
         return removed;
     }
 
     @Override
-    public Loch get(int index) {
+    public T get(int index) {
         if (isEmpty()) {
             return null;
         }

@@ -31,7 +31,7 @@ public class MaxDequeTest {
     }
 
     @Test
-    public void StringCompareTest() {
+    public void stringCompareTest() {
         MaxArrayDeque<String> s1 = new MaxArrayDeque<>();
         Comparator<String> comparator = new StringComparator();
         s1.addLast("df");

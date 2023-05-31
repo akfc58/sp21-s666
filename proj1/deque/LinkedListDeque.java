@@ -1,13 +1,13 @@
 package deque;
 
-public class LinkedListDeque<Loch> implements Deque<Loch> {
+public class LinkedListDeque<T> implements Deque<T> {
 
     private class StuffNode {
-        private Loch item;
+        private T item;
         private StuffNode prev;
         private StuffNode next;
 
-        public StuffNode(Loch i, StuffNode p, StuffNode n) {
+        public StuffNode(T i, StuffNode p, StuffNode n) {
             item = i;
             prev = p;
             next = n;
@@ -26,7 +26,7 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     /** Creates a SINGLE item Deque. */
-    public LinkedListDeque(Loch x) {
+    public LinkedListDeque(T x) {
         sentinel = new StuffNode(null, null, null); // How to fill in sentinel's item?
         StuffNode first = new StuffNode(x, sentinel, sentinel);
         sentinel.prev = first;
@@ -35,7 +35,7 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public void addFirst(Loch x) {
+    public void addFirst(T x) {
         StuffNode temp = new StuffNode(x, null, null);
         temp.prev = sentinel;
         temp.next = sentinel.next;
@@ -45,7 +45,7 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public void addLast(Loch x) {
+    public void addLast(T x) {
         StuffNode temp = new StuffNode(x, null, null);
         temp.prev = sentinel.prev;
         temp.next = sentinel;
@@ -60,11 +60,11 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public Loch removeFirst() {
+    public T removeFirst() {
         if (this.isEmpty()) {
             return null;
         }
-        Loch value = sentinel.next.item;
+        T value = sentinel.next.item;
         sentinel.next.next.prev = sentinel;
         sentinel.next = sentinel.next.next;
         size -= 1;
@@ -72,11 +72,11 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public Loch removeLast() {
+    public T removeLast() {
         if (this.isEmpty()) {
             return null;
         }
-        Loch value = sentinel.prev.item;
+        T value = sentinel.prev.item;
         sentinel.prev.prev.next = sentinel;
         sentinel.prev = sentinel.prev.prev;
         size -= 1;
@@ -94,7 +94,7 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
     }
 
     @Override
-    public Loch get(int index) {
+    public T get(int index) {
         if (isEmpty()) {
             return null;
         }
@@ -105,14 +105,14 @@ public class LinkedListDeque<Loch> implements Deque<Loch> {
         return p.item;
     }
 
-    private Loch getRecursiveHelper(int index, StuffNode p, int i) {
+    private T getRecursiveHelper(int index, StuffNode p, int i) {
         if (i == index) {
             return p.item;
         }
         return getRecursiveHelper(index, p.next, i + 1);
     }
 
-    public Loch getRecursive(int index) {
+    public T getRecursive(int index) {
         if (isEmpty()) {
             return null;
         }

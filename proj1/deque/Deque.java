@@ -1,23 +1,23 @@
 
 package deque;
 
-public interface Deque<Loch> {
+public interface Deque<T> {
 
     default boolean isEmpty() {
         return size() == 0;
     }
 
-    void addFirst(Loch item);
+    void addFirst(T item);
 
-    void addLast(Loch item);
+    void addLast(T item);
 
     int size();
 
     void printDeque();
 
-    Loch removeFirst();
+    T removeFirst();
 
-    Loch removeLast();
+    T removeLast();
 
-    Loch get(int index);
+    T get(int index);
 }

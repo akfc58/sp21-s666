@@ -10,7 +10,7 @@ public class RandomAndTimeLLDTest {
     @Test
     public void randomizedLinkedListDequeTest() {
         LinkedListDeque<Integer> LLD1 = new LinkedListDeque<>();
-        LinkedListDeque<Integer> LLD2 =new LinkedListDeque<>();
+        LinkedListDeque<Integer> LLD2 =  new LinkedListDeque<>();
         int N = 5000000;
         for (int i = 0; i < N; i += 1) {
             int operationNumber = StdRandom.uniform(0, 6);
@@ -48,7 +48,8 @@ public class RandomAndTimeLLDTest {
         }
     }
 
-    private static void printTimingTable(LinkedListDeque<Integer> Ns, LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
+    private static void printTimingTable(LinkedListDeque<Integer> Ns,
+                                         LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
         System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
         System.out.printf("------------------------------------------------------------\n");
         for (int i = 0; i < Ns.size(); i += 1) {
@@ -86,7 +87,7 @@ public class RandomAndTimeLLDTest {
             }
             Stopwatch sw = new Stopwatch();
             for (int k = 0; k < 10000; k += 1) {
-                testSLlist.get(testSLlist.size()-1);
+                testSLlist.get(testSLlist.size() - 1);
             }
             Ns.addLast(testPoint[i]);
             times.addLast(sw.elapsedTime());
