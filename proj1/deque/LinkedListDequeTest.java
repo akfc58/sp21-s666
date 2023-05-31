@@ -4,8 +4,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-
-/** Performs some linked list based deque tests. */
 public class LinkedListDequeTest {
 
     @Test
