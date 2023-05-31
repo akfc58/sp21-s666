@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<T> implements Deque<T> {
+import java.util.Iterator;
+
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private T[] items;
     private int size;
     private int nextFirst = 4;
@@ -28,8 +30,6 @@ public class ArrayDeque<T> implements Deque<T> {
      * Copy the first part of items to the new container trivially,
      * and copy the second part of the loop structure to the last part
      * of new container, reassign next first to the new location.
-     *
-     * @param cap
      */
     private void resize(int cap) {
         T[] res = (T[]) new Object[cap];
@@ -167,5 +167,65 @@ public class ArrayDeque<T> implements Deque<T> {
             }
             System.out.println();
         }
+    }
+
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator();
+    }
+
+    private class ArrayDequeIterator implements Iterator<T> {
+        int wisPos;
+
+        public ArrayDequeIterator() {
+            wisPos = 0;
+        }
+
+        @Override
+        public T next() {
+            T returnItem = get(wisPos);
+            wisPos += 1;
+            return returnItem;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (wisPos < size) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public boolean contains(T x) {
+        for (int index = 0; index < size; index++) {
+            if (get(index).equals(x)) {  // must use equals.
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true; // for efficiency
+        }
+        if (obj == null) {
+            return false;
+        }
+        if(obj.getClass() != this.getClass()) {
+            return false;
+        }
+        ArrayDeque<T> o = (ArrayDeque<T>) obj;
+        if (o.size() != this.size()) {
+            return false;
+        }
+        for (T each : this) {
+            if (!(o.contains(each))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
