@@ -1,13 +1,13 @@
 package deque;
 
-public class LinkedListDeque<Loch> implements Deque<Loch>{
+public class LinkedListDeque<Loch> implements Deque<Loch> {
 
     private class StuffNode {
-        public Loch item;
-        public StuffNode prev;
-        public StuffNode next;
+        private Loch item;
+        private StuffNode prev;
+        private StuffNode next;
 
-        public StuffNode(Loch i, StuffNode p, StuffNode n){
+        public StuffNode(Loch i, StuffNode p, StuffNode n) {
             item = i;
             prev = p;
             next = n;
@@ -99,14 +99,14 @@ public class LinkedListDeque<Loch> implements Deque<Loch>{
             return null;
         }
         StuffNode p = sentinel;
-        for (int i = 0; i <= index;i += 1) {
+        for (int i = 0; i <= index; i += 1) {
             p = p.next;
         }
         return p.item;
     }
 
     private Loch getRecursiveHelper(int index, StuffNode p, int i) {
-        if (i == index){
+        if (i == index) {
             return p.item;
         }
         return getRecursiveHelper(index, p.next, i + 1);

@@ -1,6 +1,6 @@
 package deque;
 
-public class ArrayDeque<Loch> implements Deque<Loch>{
+public class ArrayDeque<Loch> implements Deque<Loch> {
     private Loch[] items;
     private int size;
     private int nextFirst = 4;
@@ -62,6 +62,7 @@ public class ArrayDeque<Loch> implements Deque<Loch>{
                 nextLast = this.size() + nextFirst + 1;
             }
         } else {
+            return;
             //throw new RuntimeException("just assuming this won't happen");
         }
     }
@@ -165,6 +166,6 @@ public class ArrayDeque<Loch> implements Deque<Loch>{
                 System.out.print(items[index] + " ");
             }
             System.out.println();
-            }
         }
+    }
 }

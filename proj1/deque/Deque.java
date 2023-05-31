@@ -1,15 +1,23 @@
+
 package deque;
 
 public interface Deque<Loch> {
 
-    default public boolean isEmpty() {
+    default boolean isEmpty() {
         return size() == 0;
     }
-    public void addFirst(Loch item);
-    public void addLast(Loch item);
-    public int size();
-    public void printDeque();
-    public Loch removeFirst();
-    public Loch removeLast();
-    public Loch get(int index);
+
+    void addFirst(Loch item);
+
+    void addLast(Loch item);
+
+    int size();
+
+    void printDeque();
+
+    Loch removeFirst();
+
+    Loch removeLast();
+
+    Loch get(int index);
 }

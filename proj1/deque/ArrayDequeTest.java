@@ -29,7 +29,7 @@ public class ArrayDequeTest {
         t1.printDeque();
 
         ArrayDeque<Integer> t2 = new ArrayDeque<>();
-        for (int i = 0; i <= 6; i += 1){
+        for (int i = 0; i <= 6; i += 1) {
             t2.addFirst(i);
         }
         assertEquals(7, t2.size());
@@ -52,7 +52,7 @@ public class ArrayDequeTest {
 
         // Test normal remove.
         ArrayDeque<Integer> t2 = new ArrayDeque<>();
-        for (int i = 0; i <= 2; i += 1){
+        for (int i = 0; i <= 2; i += 1) {
             t2.addFirst(i);
         }
         assertEquals(3, t2.size());
@@ -62,7 +62,7 @@ public class ArrayDequeTest {
 
         // Test remove item[item.length].
         ArrayDeque<Integer> t3 = new ArrayDeque<>();
-        for (int i = 0; i <= 2; i += 1){
+        for (int i = 0; i <= 2; i += 1) {
             t3.addLast(i);
         }
         assertEquals(3, t3.size());
@@ -75,9 +75,9 @@ public class ArrayDequeTest {
 
     @Test
     /** Fill up, remove, check is empty, and fill up again. */
-    public void fillUpRemoveFillUpAgain () {
+    public void fillUpRemoveFillUpAgain() {
         ArrayDeque<Integer> t2 = new ArrayDeque<>();
-        for (int i = 0; i <= 7; i += 1){
+        for (int i = 0; i <= 7; i += 1) {
             t2.addFirst(i);
         }
         t2.printDeque();
@@ -100,7 +100,7 @@ public class ArrayDequeTest {
             assertEquals(j, (int) t.removeLast());
         }
         t.printDeque();
-        assertEquals(6,t.size());
+        assertEquals(6, t.size());
     }
 
     @Test
@@ -116,6 +116,6 @@ public class ArrayDequeTest {
             assertEquals(j, (int) t.removeFirst());
         }
         t.printDeque();
-        assertEquals(6,t.size());
+        assertEquals(6, t.size());
     }
 }
