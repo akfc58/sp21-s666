@@ -87,4 +87,35 @@ public class ArrayDequeTest {
         }
         assertTrue(t2.isEmpty());
     }
+
+    @Test
+    /** basic resize test. */
+    public void basicResizeAddAndRemoveLastTest() {
+        ArrayDeque<Integer> t = new ArrayDeque<>();
+        for (int i = 0; i < 20; i++) {
+            t.addLast(i);
+        }
+        assertEquals(20, t.size());
+        for (int j = 19; j >= 6; j--) {
+            assertEquals(j, (int) t.removeLast());
+        }
+        t.printDeque();
+        assertEquals(6,t.size());
+    }
+
+    @Test
+    /** basic resize test. */
+    public void basicResizeAddAndRemoveFirstTest() {
+        ArrayDeque<Integer> t = new ArrayDeque<>();
+        for (int i = 0; i < 20; i++) {
+            t.addFirst(i);
+        }
+        t.printDeque();
+        assertEquals(20, t.size());
+        for (int j = 19; j >= 6; j--) {
+            assertEquals(j, (int) t.removeFirst());
+        }
+        t.printDeque();
+        assertEquals(6,t.size());
+    }
 }

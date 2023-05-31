@@ -25,7 +25,52 @@ public class ArrayDeque<Loch> {
         return size == 0;
     }
 
+    /**
+     * Copy the first part of items to the new container trivially,
+     * and copy the second part of the loop structure to the last part
+     * of new container, reassign next first to the new location.
+     *
+     * @param cap
+     */
+    private void resize(int cap) {
+        Loch[] res = (Loch[]) new Object[cap];
+        System.arraycopy(items, 0, res, 0, nextLast);
+        int lengthOfLastPart = items.length - 1 - nextFirst;
+        System.arraycopy(items, nextFirst + 1, res, res.length - lengthOfLastPart, lengthOfLastPart);
+        items = res;
+        nextFirst = res.length - lengthOfLastPart - 1;
+    }
+
+    public void cutSize(int cap) {
+        Loch[] res = (Loch[]) new Object[cap];
+        boolean nextLastInFront = false;
+        if (nextFirst < nextLast) {
+            int diff = nextFirst - 5 + 1; // difference between old long Array start index with new result Array.
+            // new underlying array always start from 5.
+            for (int i = nextFirst + 1; i < nextLast; i++) { // items stays between nextFirst and nextLast.
+                if (i - diff >= res.length) {
+                    res[i - diff - res.length] = items[i];
+                    nextLastInFront = true;
+                } else {
+                    res[i - diff] = items[i]; // copy each item to res, start from default nextLast = 5.
+                }
+            }
+            items = res;
+            nextFirst = 4;
+            if (nextLastInFront) {
+                nextLast = this.size() + nextFirst - items.length + 1;
+            } else {
+                nextLast = this.size() + nextFirst + 1;
+            }
+        } else {
+            //throw new RuntimeException("just assuming this won't happen");
+        }
+    }
+
     public void addFirst(Loch x) {
+        if (nextFirst == nextLast) {
+            resize(items.length * 2);
+        }
         if (nextFirst == 0) {
             items[nextFirst] = x;
             nextFirst = items.length - 1;
@@ -37,10 +82,13 @@ public class ArrayDeque<Loch> {
     }
 
     public void addLast(Loch x) {
+        if (nextFirst == nextLast) {
+            resize(items.length * 2);
+        }
         if (nextLast == items.length - 1) {
             items[nextLast] = x;
             nextLast = 0;
-        }else {
+        } else {
             items[nextLast] = x;
             nextLast += 1;
         }
@@ -48,20 +96,30 @@ public class ArrayDeque<Loch> {
     }
 
     public Loch removeLast() {
-        if (isEmpty()){
+        //if (size < items.length / 2 && size >= 7) {
+        //    cutSize(items.length / 2);
+        //}
+
+        if (isEmpty()) {
             return null;
         }
+
         if (nextLast == 0) {
             nextLast = items.length - 1;
         } else {
             nextLast = nextLast - 1;
         }
+        Loch removed = items[nextLast];
+        items[nextLast] = null;
         size -= 1;
         // return the removed last value where nextLast is pointing at after remove.
-        return items[nextLast];
+        return removed;
     }
 
     public Loch removeFirst() {
+        //if (size < items.length / 2 && size >= 7) {
+        //    cutSize(items.length / 2);
+        //}
         if (isEmpty()) {
             return null;
         }
@@ -71,7 +129,9 @@ public class ArrayDeque<Loch> {
             nextFirst += 1;
         }
         size -= 1;
-        return items[nextFirst];
+        Loch removed = items[nextFirst];
+        items[nextFirst] = null;
+        return removed;
     }
 
     public Loch get(int index) {
