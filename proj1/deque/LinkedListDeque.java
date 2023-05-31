@@ -1,6 +1,6 @@
 package deque;
 
-public class LinkedListDeque<Loch> {
+public class LinkedListDeque<Loch> implements Deque<Loch>{
 
     private class StuffNode {
         public Loch item;
@@ -34,6 +34,7 @@ public class LinkedListDeque<Loch> {
         size = 1;
     }
 
+    @Override
     public void addFirst(Loch x) {
         StuffNode temp = new StuffNode(x, null, null);
         temp.prev = sentinel;
@@ -43,6 +44,7 @@ public class LinkedListDeque<Loch> {
         size += 1;
     }
 
+    @Override
     public void addLast(Loch x) {
         StuffNode temp = new StuffNode(x, null, null);
         temp.prev = sentinel.prev;
@@ -52,14 +54,12 @@ public class LinkedListDeque<Loch> {
         size += 1;
     }
 
-    public boolean isEmpty() {
-        return sentinel.next == sentinel;
-    }
-
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public Loch removeFirst() {
         if (this.isEmpty()) {
             return null;
@@ -71,6 +71,7 @@ public class LinkedListDeque<Loch> {
         return value;
     }
 
+    @Override
     public Loch removeLast() {
         if (this.isEmpty()) {
             return null;
@@ -82,6 +83,7 @@ public class LinkedListDeque<Loch> {
         return value;
     }
 
+    @Override
     public void printDeque() {
         StuffNode p = sentinel.next;
         while (p != sentinel) {
@@ -91,6 +93,7 @@ public class LinkedListDeque<Loch> {
         System.out.println(); // Print a blank line after the deque.
     }
 
+    @Override
     public Loch get(int index) {
         if (isEmpty()) {
             return null;

@@ -1,6 +1,6 @@
 package deque;
 
-public class ArrayDeque<Loch> {
+public class ArrayDeque<Loch> implements Deque<Loch>{
     private Loch[] items;
     private int size;
     private int nextFirst = 4;
@@ -17,13 +17,12 @@ public class ArrayDeque<Loch> {
         size = 1;
     }
 
+    @Override
     public int size() {
         return size;
     }
 
-    public boolean isEmpty() {
-        return size == 0;
-    }
+
 
     /**
      * Copy the first part of items to the new container trivially,
@@ -41,7 +40,7 @@ public class ArrayDeque<Loch> {
         nextFirst = res.length - lengthOfLastPart - 1;
     }
 
-    public void cutSize(int cap) {
+    private void cutSize(int cap) {
         Loch[] res = (Loch[]) new Object[cap];
         boolean nextLastInFront = false;
         if (nextFirst < nextLast) {
@@ -67,6 +66,7 @@ public class ArrayDeque<Loch> {
         }
     }
 
+    @Override
     public void addFirst(Loch x) {
         if (nextFirst == nextLast) {
             resize(items.length * 2);
@@ -81,6 +81,7 @@ public class ArrayDeque<Loch> {
         size += 1;
     }
 
+    @Override
     public void addLast(Loch x) {
         if (nextFirst == nextLast) {
             resize(items.length * 2);
@@ -95,6 +96,7 @@ public class ArrayDeque<Loch> {
         size += 1;
     }
 
+    @Override
     public Loch removeLast() {
         //if (size < items.length / 2 && size >= 7) {
         //    cutSize(items.length / 2);
@@ -116,6 +118,7 @@ public class ArrayDeque<Loch> {
         return removed;
     }
 
+    @Override
     public Loch removeFirst() {
         //if (size < items.length / 2 && size >= 7) {
         //    cutSize(items.length / 2);
@@ -134,6 +137,7 @@ public class ArrayDeque<Loch> {
         return removed;
     }
 
+    @Override
     public Loch get(int index) {
         if (isEmpty()) {
             return null;
@@ -146,7 +150,7 @@ public class ArrayDeque<Loch> {
         }
     }
 
-
+    @Override
     public void printDeque() {
         if (nextLast > nextFirst) {
             for (int index = nextFirst + 1; index < nextLast; index += 1) {
