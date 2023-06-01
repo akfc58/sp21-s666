@@ -49,6 +49,7 @@ public class TestGuitarString  {
 
         s.tic();
         assertNotEquals("After tic(), your samples should not stay the same.", sample1, s.sample());
+
     }
 
 
