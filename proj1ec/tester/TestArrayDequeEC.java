@@ -36,28 +36,28 @@ public class TestArrayDequeEC {
                 int size1 = LLD1.size();
                 int size2 = LLD2.size();
                 stack.addLast("size()");
-                assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
-                        + stack.get(stack.size() - 3) + "\n", size1, size2);
+                assertEquals(stack.get(stack.size() - 3) + "\n" + stack.get(stack.size() - 2) + "\n"
+                        + stack.get(stack.size() - 1) + "\n", size1, size2);
             } else if (operationNumber == 3) {
                 // removeLast
                 if (LLD1.size() > 0) {
                     stack.addLast("removeLast()");
-                    assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
-                            + stack.get(stack.size() - 3) + "\n", LLD1.removeLast(), LLD2.removeLast());
+                    assertEquals(stack.get(stack.size() - 3) + "\n" + stack.get(stack.size() - 2) + "\n"
+                            + stack.get(stack.size() - 1) + "\n", LLD1.removeLast(), LLD2.removeLast());
                 }
             } else if (operationNumber == 4) {
                 // removeFirst
                 if (LLD1.size() > 0) {
                     stack.addLast("removeFirst()");
-                    assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
-                            + stack.get(stack.size() - 3) + "\n", LLD1.removeFirst(), LLD2.removeFirst());
+                    assertEquals(stack.get(stack.size() - 3) + "\n" + stack.get(stack.size() - 2) + "\n"
+                            + stack.get(stack.size() - 1) + "\n", LLD1.removeFirst(), LLD2.removeFirst());
                 }
             } else if (operationNumber == 5) {
                 if (LLD1.size() > 0) {
                     int index = StdRandom.uniform(0, LLD1.size());
                     stack.addLast("get(" + index + ")");
-                    assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
-                            + stack.get(stack.size() - 3) + "\n", LLD1.get(index), LLD2.get(index));
+                    assertEquals(stack.get(stack.size() - 3) + "\n" + stack.get(stack.size() - 2) + "\n"
+                            + stack.get(stack.size() - 1) + "\n", LLD1.get(index), LLD2.get(index));
                 }
             }
         }
