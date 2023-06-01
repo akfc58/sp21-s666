@@ -18,6 +18,7 @@ public class TestArrayDequeEC {
         stack.addLast("");
         stack.addLast("");
         for (int i = 0; i < N; i += 1) {
+            stack.printDeque();
             int operationNumber = StdRandom.uniform(0, 6);
             if (operationNumber == 0) {
                 // addLast
@@ -41,16 +42,16 @@ public class TestArrayDequeEC {
             } else if (operationNumber == 3) {
                 // removeLast
                 if (LLD1.size() > 0) {
+                    stack.addLast("removeLast()");
                     assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
                             + stack.get(stack.size() - 3) + "\n", LLD1.removeLast(), LLD2.removeLast());
-                    stack.addLast("removeLast()");
                 }
             } else if (operationNumber == 4) {
                 // removeFirst
                 if (LLD1.size() > 0) {
+                    stack.addLast("removeFirst()");
                     assertEquals(stack.get(stack.size() - 1) + "\n" + stack.get(stack.size() - 2) + "\n"
                             + stack.get(stack.size() - 3) + "\n", LLD1.removeFirst(), LLD2.removeFirst());
-                    stack.addLast("removeFirst()");
                 }
             } else if (operationNumber == 5) {
                 if (LLD1.size() > 0) {
