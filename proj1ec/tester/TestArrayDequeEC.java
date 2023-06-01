@@ -18,7 +18,6 @@ public class TestArrayDequeEC {
         stack.addLast("");
         stack.addLast("");
         for (int i = 0; i < N; i += 1) {
-            stack.printDeque();
             int operationNumber = StdRandom.uniform(0, 6);
             if (operationNumber == 0) {
                 // addLast
