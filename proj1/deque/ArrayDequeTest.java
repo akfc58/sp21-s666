@@ -25,7 +25,7 @@ public class ArrayDequeTest {
     public void randomizedArrayDequeTest() {
         ArrayDeque<Integer> LLD1 = new ArrayDeque<>();
         ArrayDeque<Integer> LLD2 = new ArrayDeque<>();
-        int N = 500000;
+        int N = 5000000;
         for (int i = 0; i < N; i += 1) {
             int operationNumber = StdRandom.uniform(0, 6);
             if (operationNumber == 0) {

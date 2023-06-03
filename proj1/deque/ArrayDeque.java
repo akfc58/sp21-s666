@@ -35,33 +35,17 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextFirst = res.length - lengthOfLastPart - 1;
     }
 
-    private void cutSize(int cap) {
+    private void shrink(int cap) {
         T[] res = (T[]) new Object[cap];
-        boolean nextLastInFront = false;
+        int start = 5;
         if (nextFirst < nextLast) {
-            int diff = nextFirst - 5 + 1;
-            // difference between old long Array start index with new result Array.
-            // new underlying array always start from 5.
-            for (int i = nextFirst + 1; i < nextLast; i++) {
-                // items stays between nextFirst and nextLast.
-                if (i - diff >= res.length) {
-                    res[i - diff - res.length] = items[i];
-                    nextLastInFront = true;
-                } else {
-                    res[i - diff] = items[i];
-                    // copy each item to res, start from default nextLast = 5.
+            for (T each : this) {
+                if (start == cap){
+                    start = 0;
                 }
+                res[start] = each;
+                start += 1;
             }
-            items = res;
-            nextFirst = 4;
-            if (nextLastInFront) {
-                nextLast = this.size() + nextFirst - items.length + 1;
-            } else {
-                nextLast = this.size() + nextFirst + 1;
-            }
-        } else {
-            return;
-            //throw new RuntimeException("just assuming this won't happen");
         }
     }
 
@@ -97,9 +81,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T removeLast() {
-        //if (size < items.length / 2 && size >= 7) {
-        //    cutSize(items.length / 2);
-        //}
+        if (size < items.length / 2 && size >= 7) {
+            shrink(items.length / 2);
+        }
 
         if (isEmpty()) {
             return null;
@@ -119,9 +103,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T removeFirst() {
-        //if (size < items.length / 2 && size >= 7) {
-        //    cutSize(items.length / 2);
-        //}
+        if (size < items.length / 2 && size >= 7) {
+            shrink(items.length / 2);
+        }
         if (isEmpty()) {
             return null;
         }
