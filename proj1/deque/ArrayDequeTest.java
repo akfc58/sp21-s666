@@ -20,6 +20,21 @@ public class ArrayDequeTest {
         assertEquals(t1, t2);
     }
 
+    @Test
+    /** Test for array shrink. */
+    public void shrinkTest() {
+        ArrayDeque<Integer> t = new ArrayDeque<>();
+        for (int i = 0; i <= 20; i++) {
+            t.addLast(i);
+        }
+        t.printDeque();
+        for (int i = 0; i <= 20; i++) {
+            t.removeFirst();
+            t.removeLast();
+        }
+        t.printDeque();
+    }
+
     /** A big size random test for almost all operations in AD. */
     @Test
     public void randomizedArrayDequeTest() {

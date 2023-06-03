@@ -38,15 +38,16 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private void shrink(int cap) {
         T[] res = (T[]) new Object[cap];
         int start = 5;
-        if (nextFirst < nextLast) {
-            for (T each : this) {
-                if (start == cap){
-                    start = 0;
-                }
-                res[start] = each;
-                start += 1;
+        for (T each : this) {
+            if (start == cap) {
+                start = 0;
             }
+            res[start] = each;
+            start += 1;
         }
+        nextFirst = 4;
+        nextLast = start;
+        items = res;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     @Override
     public T removeLast() {
         if (size < items.length / 2 && size >= 7) {
-            shrink(items.length / 2);
+            shrink(items.length / 2 + 1);
         }
 
         if (isEmpty()) {
@@ -104,7 +105,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     @Override
     public T removeFirst() {
         if (size < items.length / 2 && size >= 7) {
-            shrink(items.length / 2);
+            shrink(items.length / 2 + 1);
         }
         if (isEmpty()) {
             return null;
