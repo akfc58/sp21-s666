@@ -1,10 +1,9 @@
 package bstmap;
 
-import java.util.Iterator;
-import java.util.Set;
-
+import java.util.*;
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private BSTNode root; // root of BSTMap
+    private Set<K> allKeys = new HashSet<>();
     private class BSTNode {
         private K key;
         private V val;
@@ -23,6 +22,15 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         root = null;
     }
 
+    private void getAllKeysHelper(BSTNode n) {
+        if (n == null) {
+            return;
+        }
+        getAllKeysHelper(n.left);
+        allKeys.add(n.key); // in a Set, order doesn't matter.
+        getAllKeysHelper(n.right);
+    }
+
     @Override
     public void clear() {
         root = null;
@@ -30,14 +38,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        if (containsKeyhelper(root, key) != null) {
-            return true;
-        }
-        return false;
+        return containsKeyhelper(root, key) != null;
     }
 
     private K containsKeyhelper(BSTNode n, K key) {
-        if(!(key instanceof Comparable)) {
+        if (key == null) {
             throw new IllegalArgumentException("key must be comparable");
         }
         if (n == null) {
@@ -47,7 +52,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (cmp < 0) {
             return containsKeyhelper(n.left, key);
         }
-        if (cmp < 0) {
+        if (cmp > 0) {
             return containsKeyhelper(n.right, key);
         }
         return n.key;
@@ -59,7 +64,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     private V get(BSTNode n, K key) {
-        if(!(key instanceof Comparable)) {
+        if (key == null) {
             throw new IllegalArgumentException("key must be comparable");
         }
         if (n == null) {
@@ -93,7 +98,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     private BSTNode put(BSTNode n, K key, V value) {
-        if (!(key instanceof Comparable)) {
+        if (key == null) {
             throw new IllegalArgumentException("key must be comparable");
         }
         if (n == null) {
@@ -102,7 +107,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         int cmp = key.compareTo(n.key);
         if (cmp < 0) {
             n.left = put(n.left, key, value);
-        }else if (cmp > 0) {
+        } else if (cmp > 0) {
             n.right = put(n.right, key, value);
         } else {
             n.val = value;
@@ -114,7 +119,8 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        getAllKeysHelper(root);
+        return allKeys;
     }
 
     @Override
@@ -129,24 +135,39 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
+        return new BSTMapIterator();
     }
 
-    public void printInOrder(){
+    private class BSTMapIterator implements Iterator<K> {
+        private K curr;
+        private List<K> toList = new ArrayList<>();
+
+        public BSTMapIterator() {
+            toList.addAll(allKeys);
+            toList.sort(Comparator.naturalOrder());
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !toList.isEmpty();
+        }
+
+        @Override
+        public K next() {
+            return toList.remove(0);
+        }
+    }
+
+    public void printInOrder() {
         printInOrderhelper(this.root);
     }
 
-    private BSTNode printInOrderhelper(BSTNode n) {
+    private void printInOrderhelper(BSTNode n) {
         if (n == null) {
-            return null;
+            return;
         }
         printInOrderhelper(n.left);
-        System.out.println("key is: " + n.key + ". value is: " + n.val + ".");
+        // System.out.println("key is: " + n.key + ". value is: " + n.val + ".");
         printInOrderhelper(n.right);
-        return n;
     }
-
-
-
-
 }

@@ -23,6 +23,9 @@ public class TestBSTMapExtra {
         Set<String> keySet = b.keySet();
         assertTrue(values.containsAll(keySet));
         assertTrue(keySet.containsAll(values));
+        for (String i : b) {
+            // System.out.println(i);
+        }
     }
 
     /* Remove Test
