@@ -87,4 +87,15 @@ public class TestBSTMap {
         assertTrue(b.containsKey("hi"));
     }
 
+    //test printInOrder
+    @Test
+    public void printInOrderTest() {
+          BSTMap<Integer, String> b = new BSTMap<>();
+          b.put(1, "a");
+          b.put(3, "b");
+          b.put(2, "ab");
+          b.put(11, "x");
+          b.put(4, "d");
+          b.printInOrder();
+    }
 }
