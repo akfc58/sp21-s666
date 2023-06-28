@@ -1,15 +1,12 @@
 package gitlet;
 
-// TODO: any imports you need here
 
 import java.io.Serializable;
 import java.util.Date;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
  *
- *  @author TODO
+ *  @author dongliang
  */
 public class Commit implements Serializable {
     /**
@@ -23,13 +20,15 @@ public class Commit implements Serializable {
     /** The timestamp of this commit. */
     private Date timestamp;
     /** The parent of this commit. */
-    private Commit parent;
+    private String parent;
     // TODO: variables of tracking all files.
+    // TODO: sha1 naming?
+    // TODO: branches and HEAD, which is just a refs using sha1.
 
-    public Commit(String m, Commit p) {
+    public Commit(String m, String p) {
         this.message = m;
         this.parent = p;
-        this.timestamp = new Date();
+        this.timestamp = new Date(); // current date.
         // TODO verify this date object.
     }
 
@@ -39,7 +38,12 @@ public class Commit implements Serializable {
         this.message = "inital commit";
         this.parent = null;
         this.timestamp = new Date(0); // creates the 1970 UTC date.
-        // TODO verify this date object.
+    }
 
+    public String sha1() {
+        // TODO: is this the right way to do sha1? maybe it's right!
+        //  this is having a universal method for this class to
+        //  calculate a sha1 for each instance.
+        return Utils.sha1(Utils.serialize(this));
     }
 }

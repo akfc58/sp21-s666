@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.util.*;
+
 import static gitlet.Utils.*;
 
 
@@ -36,10 +38,33 @@ public class Repository {
             System.exit(0);
         }
         GITLET_DIR.mkdir();
+        File commits = join(GITLET_DIR, "commits");
+        File blobs = join(GITLET_DIR, "blobs");
+        File refs = join(GITLET_DIR, "refs");
+        commits.mkdir();
+        refs.mkdir();
+        blobs.mkdir();
         // TODO: master branch and HEAD branch refs to inital commit.
-        // TODO: create all other things in .gitlet.
+        // TODO: create all other things in .gitlet. 1. staged 2. objects. 3.refs(pointers as string) 4.logs?
         Commit initalCommit = new Commit();
-        File intialCommitFile = join(GITLET_DIR, "initalCommit");
+        File intialCommitFile = join(commits, initalCommit.sha1());
         Utils.writeObject(intialCommitFile, initalCommit);
     }
+
+    public static void add(String fileName) {
+        List<String> allPlainFiles = plainFilenamesIn(CWD);
+        if (allPlainFiles!= null && allPlainFiles.contains(fileName)) {
+            String fileContent = readContentsAsString(join(CWD, fileName));
+            String blobSha1Name = sha1(fileContent);
+            File blob = join(GITLET_DIR, "blobs", blobSha1Name);
+            writeContents(blob, fileContent); // create blob that contains file content.
+            //TODO: add name -> blob set of map to stage area.
+            Stage.addStage(fileName, blob);
+            Stage.saveStage();
+        } else {
+            System.out.println("File does not exist.");
+            System.exit(0);
+        }
+    }
+
 }

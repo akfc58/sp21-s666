@@ -18,13 +18,13 @@ public class Main {
             // TODO: If a user inputs a command with the wrong number or format of operands,
             //  print the message Incorrect operands. and exit.
             case "init":
-                if (args.length != 1) {
-                    System.out.println("Incorrect operands.");
-                }
+                validateNumArgs(args, 1);
                 Repository.init();
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
+                validateNumArgs(args, 2);
+                Repository.add(args[1]);
                 break;
             case "commit":
 
@@ -54,4 +54,13 @@ public class Main {
             // TODO: FILL THE REST IN
         }
     }
+
+    /** validate the command arguments. */
+    public static void validateNumArgs(String[] args, int n) {
+        if (args.length != n) {
+            System.out.println("Incorrect operands.");
+            System.exit(0);
+        }
+    }
 }
+
