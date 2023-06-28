@@ -3,27 +3,43 @@ package gitlet;
 import java.io.File;
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+ *  this Class handles all coordination among the other classes.
  *
- *  @author TODO
+ *  @author dongliang
  */
 public class Repository {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Repository class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided two examples for you.
-     */
 
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
-    /* TODO: fill in the rest of this class. */
+    /**
+     * Initialize the .gitlet folder to contain gitlet opreations.
+     * Structure as follows:
+     * .gitlet/ -- top level folder for all persistent data in your lab12 folder
+     *    - staged/ -- folder containing all stage files
+     *       - added/ -- folder containing all stage files that marked added.
+     *       - removed/ -- folder containing all stage files that marked removed.
+     *    - refs/
+     *    - object/ -- all persisted object.
+     *    - log
+     *    - HEAD
+     */
+    public static void init() {
+        // not overwrite current .gitlet and exit.
+        if (GITLET_DIR.exists()) {
+            System.out.println("A Gitlet version-control system already" +
+                    " exists in the current directory.");
+            System.exit(0);
+        }
+        GITLET_DIR.mkdir();
+        // TODO: master branch and HEAD branch refs to inital commit.
+        // TODO: create all other things in .gitlet.
+        Commit initalCommit = new Commit();
+        File intialCommitFile = join(GITLET_DIR, "initalCommit");
+        Utils.writeObject(intialCommitFile, initalCommit);
+    }
 }

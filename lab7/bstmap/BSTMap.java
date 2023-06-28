@@ -1,5 +1,7 @@
 package bstmap;
 
+import edu.princeton.cs.algs4.BST;
+
 import java.util.*;
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private BSTNode root; // root of BSTMap
@@ -125,9 +127,21 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        root = removeHelper(key, root);
+        return n.val;
     }
 
+    private BSTNode removeHelper(K key, BSTNode n) {
+        int cmp = key.compareTo((K) n.key);
+        if (cmp < 0) {
+            return removeHelper(key, n.left);
+        }
+        if (cmp > 0) {
+            return removeHelper(key, n.right);
+        }
+        return n;
+
+    }
     @Override
     public V remove(K key, V value) {
         throw new UnsupportedOperationException();
@@ -167,7 +181,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             return;
         }
         printInOrderhelper(n.left);
-        // System.out.println("key is: " + n.key + ". value is: " + n.val + ".");
+        System.out.println("key is: " + n.key + ". value is: " + n.val + ".");
         printInOrderhelper(n.right);
     }
 }
