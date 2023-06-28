@@ -2,7 +2,8 @@ package gitlet;
 
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.*;
+import static gitlet.Utils.*;
 
 /** Represents a gitlet commit object.
  *
@@ -21,15 +22,18 @@ public class Commit implements Serializable {
     private Date timestamp;
     /** The parent of this commit. */
     private String parent;
-    // TODO: variables of tracking all files.
-    // TODO: sha1 naming?
-    // TODO: branches and HEAD, which is just a refs using sha1.
+    private Set<Map<String, String>> commitContent = new HashSet<>();
+    /** The Branches of commit. */
+    private static List<Map<String, String>> branches = new ArrayList<>(); // same for all commits.
+    private static String HEAD = ""; // same for all commits.
 
     public Commit(String m, String p) {
         this.message = m;
         this.parent = p;
         this.timestamp = new Date(); // current date.
-        // TODO verify this date object.
+        this.commitContent = updateFile();
+
+    //TODO: 1. of parent. 2. of stage toAdd.
     }
 
     /** Create the initial commit with this no argument constructor.
@@ -37,7 +41,28 @@ public class Commit implements Serializable {
     public Commit() {
         this.message = "inital commit";
         this.parent = null;
-        this.timestamp = new Date(0); // creates the 1970 UTC date.
+        this.timestamp = new Date(0);// creates the 1970 UTC date.
+        this.commitContent = null;
+        HEAD = this.sha1();
+        Map<String, String> newMap = new HashMap<>();
+        newMap.put("master", HEAD);
+        branches.add(newMap);
+    }
+
+    /**
+     * this function update the commit entry of files to be commited.
+     * @return
+     */
+    private Set<Map<String, String>> updateFile() {
+        Commit father = Utils.readObject(join(Repository.GITLET_DIR,
+                "commits",this.parent), Commit.class);
+        Stage e = Utils.readObject(join(Repository.GITLET_DIR,
+                "stage"), Stage.class);
+        Set<Map<String, String>> returnVal = new HashSet<>();
+        returnVal.addAll(father.commitContent);
+        returnVal.addAll(e.getToAdd());
+        System.out.println(returnVal);
+        return returnVal;
     }
 
     public String sha1() {
@@ -45,5 +70,13 @@ public class Commit implements Serializable {
         //  this is having a universal method for this class to
         //  calculate a sha1 for each instance.
         return Utils.sha1(Utils.serialize(this));
+    }
+
+    /**
+     * get universal HEAD.
+     * @return
+     */
+    public static String getHEAD() {
+        return HEAD;
     }
 }

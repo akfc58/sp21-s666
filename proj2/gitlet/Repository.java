@@ -17,18 +17,18 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
+    public static String HEAD = "";
+    public static List<String> branches = new ArrayList<>();
 
     /**
      * Initialize the .gitlet folder to contain gitlet opreations.
      * Structure as follows:
      * .gitlet/ -- top level folder for all persistent data in your lab12 folder
-     *    - staged/ -- folder containing all stage files
-     *       - added/ -- folder containing all stage files that marked added.
-     *       - removed/ -- folder containing all stage files that marked removed.
-     *    - refs/
-     *    - object/ -- all persisted object.
+     *    - stage -- containing all staged files' map of added/removed name and its blob.
+     *    - refs/ //TODO
+     *    - blobs/ -- different version of files.
+     *    - commits/
      *    - log
-     *    - HEAD
      */
     public static void init() {
         // not overwrite current .gitlet and exit.
@@ -37,34 +37,73 @@ public class Repository {
                     " exists in the current directory.");
             System.exit(0);
         }
-        GITLET_DIR.mkdir();
+        makeDirectories();
+        Commit initalCommit = new Commit();
+        writeCommit(initalCommit);
+        // TODO: master branch and HEAD branch refs to inital commit.
+        // TODO: create all other things in .gitlet. 1. staged 2. objects.
+        //  3.refs(pointers as string) 4.logs?
+
+    }
+
+    /** helper function of init. creates necessary folders. */
+    private static void makeDirectories() {
         File commits = join(GITLET_DIR, "commits");
         File blobs = join(GITLET_DIR, "blobs");
         File refs = join(GITLET_DIR, "refs");
+        GITLET_DIR.mkdir();
         commits.mkdir();
         refs.mkdir();
         blobs.mkdir();
-        // TODO: master branch and HEAD branch refs to inital commit.
-        // TODO: create all other things in .gitlet. 1. staged 2. objects. 3.refs(pointers as string) 4.logs?
-        Commit initalCommit = new Commit();
-        File intialCommitFile = join(commits, initalCommit.sha1());
-        Utils.writeObject(intialCommitFile, initalCommit);
     }
 
+    /** write commit to .gitlet/commits. */
+    private static void writeCommit(Commit c) {
+        String commitSha1 = c.sha1();
+        File commitFile = join(GITLET_DIR, "commits", commitSha1);
+        Utils.writeObject(commitFile, c);
+    }
+
+    /**
+     * add FILENAME to dd/remove one file at a time to the staging area.
+     * Includes: turn file into a blob; update stage; save stage.
+     * @param fileName
+     */
     public static void add(String fileName) {
+        if (!GITLET_DIR.exists()) {
+            System.out.println("No .gitlet! please check.");
+            System.exit(0);
+        }
         List<String> allPlainFiles = plainFilenamesIn(CWD);
         if (allPlainFiles!= null && allPlainFiles.contains(fileName)) {
             String fileContent = readContentsAsString(join(CWD, fileName));
             String blobSha1Name = sha1(fileContent);
             File blob = join(GITLET_DIR, "blobs", blobSha1Name);
-            writeContents(blob, fileContent); // create blob that contains file content.
-            //TODO: add name -> blob set of map to stage area.
-            Stage.addStage(fileName, blob);
-            Stage.saveStage();
+            writeContents(blob, fileContent); //TODO: should deal with binary files?
+            changeStage(fileName, blobSha1Name); // change stage according to newly added blob.
         } else {
             System.out.println("File does not exist.");
             System.exit(0);
         }
     }
 
+    private static void changeStage(String fileName, String blobName) {
+        File oldStageFile = join(GITLET_DIR, "stage");
+        if (oldStageFile.exists()) {
+            Stage oldStage = readObject(oldStageFile, Stage.class);
+            oldStage.updateStage(fileName, blobName);
+        } else {
+            Stage s = new Stage(fileName, blobName);
+            s.saveStage();
+        }
+    }
+
+    /**
+     * Receives commit message, make a new commit according to stage area and old commit.
+     * @param message
+     */
+    public static void commit(String message) {
+        Commit c = new Commit(message, Commit.getHEAD()); //TODO: this is wrong HEAD.why?
+        writeCommit(c);
+    }
 }
