@@ -13,37 +13,63 @@ public class Stage implements Serializable {
     /** Folder that contains the two sets of map of
      * staged files to be 1.added; 2.removed.
      */
-    private static Set<Map<String, String>> toAdd = new HashSet<>();
-    private static Set<Map<String, String>> toRemove = new HashSet<>();
-    private final static File stage = Utils.join(Repository.GITLET_DIR, "stage");
+    private Set<Map<String, String>> toAdd = new HashSet<>();
+    private Set<Map<String, String>> toRemove = new HashSet<>();
+    private final static File stageDir = Utils.join(Repository.GITLET_DIR, "stage");
 
-    public static void addStage(String fileName, String blobName) {
-        Map<String, String> newAdd = new TreeMap<String, String>();
-        newAdd.put(fileName, blobName);
-        toAdd.add(newAdd);
+    /** new runtime stage instance always keep track of  what's persisted before. */
+    public Stage() {
+        readStage();
     }
 
-    public static void saveStage() {
-        Utils.writeObject(stage, Stage.class);
+    public void addStage(String key, String val) {
+        Map<String, String> newAdd = new TreeMap<String, String>();
+        newAdd.put(key, val);
+        toAdd.add(newAdd);
+        saveStage();
+    }
+
+    public void removeStage(String key, String val) {
+        //TODO
+    }
+
+    public void clear() {
+        //TODO: clear stage area after a commit.
+        toAdd = new HashSet<>();
+        toRemove = new HashSet<>();
+        Utils.writeObject(stageDir, this);
+    }
+
+    public  boolean haveStage() {
+        if (toAdd.isEmpty() && toRemove.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    private void readStage() {
+        if (stageDir.exists()) {
+            Stage oldStage = Utils.readObject(stageDir, Stage.class);
+            this.toAdd = oldStage.toAdd;
+            this.toRemove = oldStage.toRemove;
+        }
+    }
+
+
+
+    private  void saveStage() {
+        Utils.writeObject(stageDir, this);
         for (Map m : toAdd) {
             System.out.println(m);
         }
     }
 
-    public static void updateStage(String key, String val) {
-        Map<String, String> newAdd = new TreeMap<String, String>();
-        newAdd.put(key, val);
-        toAdd.add(newAdd);
-    }
 
-    public static void clear() {
-        //TODO: clear stage area after a commit.
-        toAdd = new HashSet<>();
-        toRemove = new HashSet<>();
-        Utils.writeObject(stage, Stage.class);
-    }
-
-    public static Set<Map<String, String>> getToAdd() {
+    public Set<Map<String, String>> getToAdd() {
         return toAdd;
     }
+    public Set<Map<String, String>> getToRemove() {
+        return toRemove;
+    }
+
 }

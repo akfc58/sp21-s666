@@ -15,34 +15,27 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
-    public static String HEAD = "";
-    public static List<String> branches = new ArrayList<>();
 
     /**
      * Initialize the .gitlet folder to contain gitlet opreations.
      * Structure as follows:
      * .gitlet/ -- top level folder for all persistent data in your lab12 folder
-     *    - stage -- containing all staged files' map of added/removed name and its blob.
+     *    - stage -- a file containing all staged files' map of added/removed name and its blob.
      *    - refs/ //TODO
-     *    - blobs/ -- different version of files.
-     *    - commits/
-     *    - log
+     *    - blobs/ -- different version of files. name in sha-1.
+     *    - commits/ -- commits. name in sha-1.
+     *    - log //TODO
      */
     public static void init() {
-        // not overwrite current .gitlet and exit.
         if (GITLET_DIR.exists()) {
             System.out.println("A Gitlet version-control system already" +
                     " exists in the current directory.");
             System.exit(0);
         }
         makeDirectories();
-        Commit initalCommit = new Commit();
+        Commit initalCommit = new Commit(); // constructor without parameters specific for the initial commit.
         writeCommitChangeHEAD(initalCommit);
-
-        // TODO: master branch and HEAD branch refs to inital commit.
-        // TODO: create all other things in .gitlet. 1. staged 2. objects.
-        //  3.refs(pointers as string) 4.logs?
-
+        // TODO: master branch  refs to inital commit.
     }
 
     /** helper function of init. creates necessary folders. */
@@ -56,7 +49,8 @@ public class Repository {
         blobs.mkdir();
     }
 
-    /** write commit to .gitlet/commits. change HEAD. */
+    /** write commit to .gitlet/commits.
+     * because HEAD changes iff a commit is written. so change HEAD at the same time. */
     private static void writeCommitChangeHEAD(Commit c) {
         String commitSha1 = c.sha1();
         File commitFile = Utils.join(GITLET_DIR, "commits", commitSha1);
@@ -65,7 +59,7 @@ public class Repository {
     }
 
     /**
-     * add FILENAME to dd/remove one file at a time to the staging area.
+     * add FILENAME to add/remove one file at a time to the staging area.
      * Includes: turn file into a blob; update stage; save stage.
      * @param fileName
      */
@@ -75,20 +69,18 @@ public class Repository {
             System.exit(0);
         }
         List<String> allPlainFiles = Utils.plainFilenamesIn(CWD);
+        // make sure that the asked file exists.
         if (allPlainFiles!= null && allPlainFiles.contains(fileName)) {
             String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
             String blobSha1Name = Utils.sha1(fileContent);
             File blob = Utils.join(GITLET_DIR, "blobs", blobSha1Name);
-            Utils.writeContents(blob, fileContent); //TODO: should deal with binary files?
-            changeStage(fileName, blobSha1Name); // change stage according to newly added blob.
+            Utils.writeContents(blob, fileContent);
+            Stage e = new Stage();
+            e.addStage(fileName, blobSha1Name);
         } else {
             System.out.println("File does not exist.");
             System.exit(0);
         }
-    }
-
-    private static void changeStage(String fileName, String blobName) {
-            Stage.updateStage(fileName, blobName);
     }
 
     /**
@@ -96,7 +88,21 @@ public class Repository {
      * @param message
      */
     public static void commit(String message) {
-        Commit c = new Commit(message, Refs.getHEAD());
-        writeCommitChangeHEAD(c);
+        if (!GITLET_DIR.exists()) {
+            System.out.println("No .gitlet! please check.");
+            System.exit(0);
+        }
+        Stage e = new Stage();
+        if (!e.haveStage()) {
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
+        if (message.isEmpty()) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
+            Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
+            writeCommitChangeHEAD(c);
+            e.clear(); // clear stage area after commit.
     }
 }

@@ -1,6 +1,5 @@
 package gitlet;
 
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -62,4 +61,5 @@ public class Commit implements Serializable {
         //  calculate a sha1 for each instance.
         return Utils.sha1(Utils.serialize(this));
     }
+
 }
