@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.rmi.server.RemoteRef;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author dongliang
  */
@@ -33,7 +35,8 @@ public class Main {
             case "rm":
 
             case "log":
-
+                Repository.log();
+                break;
             case "global-log":
 
             case "find":
@@ -44,13 +47,12 @@ public class Main {
                 if (args.length == 3) { // use equals, not == !!!
                     Repository.checkoutFile(args[2]);
                 }
-                if (args.length == 4 &&args[1].length() == 40 && args[2] == "--") {
-                    // Repository.checkoutcommitFile();
+                if (args.length == 4) {
+                    Repository.checkoutCommitFile(args[1], args[3]); //TODO: do not move HEAD. See specs.
                 }
                 if (args.length == 2){
                     // TODO: add arg[1] in branch list.
                 }
-                // Repository.checkoutBranch();
                 break;
             case "branch":
 

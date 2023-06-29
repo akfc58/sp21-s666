@@ -13,7 +13,7 @@ public class Commit implements Serializable {
     private String message;
     /** The timestamp of this commit. */
     private Date timestamp;
-    /** The parent of this commit. */
+    /** The parent of this commit. Represented in sha-1 value. */
     private String parent;
     /** The blobs Set of this commit. */
     private Map<String, String> commitContent = new HashMap<>();
@@ -30,7 +30,7 @@ public class Commit implements Serializable {
     /** Create the initial commit with this no argument constructor.
      */
     public Commit() {
-        this.message = "inital commit";
+        this.message = "initial commit";
         this.parent = null;
         this.timestamp = new Date(0);// creates the 1970 UTC date.
         this.commitContent = null;
@@ -62,8 +62,20 @@ public class Commit implements Serializable {
         return Utils.sha1(Utils.serialize(this));
     }
 
+    /** getters. */
     public Map<String, String> getCommitContent() {
         return commitContent;
     }
 
+    public String getParent() {
+        return parent;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }
