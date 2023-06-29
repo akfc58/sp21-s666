@@ -105,4 +105,22 @@ public class Repository {
             writeCommitChangeHEAD(c);
             e.clear(); // clear stage area after commit.
     }
+
+    /**
+     * Checkout File that is in current HEAD, replace it in CWD.
+     */
+    public static void checkoutFile(String fileName) {
+        String currHEAD = Utils.readContentsAsString(Utils.join(GITLET_DIR, "HEAD"));
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_DIR, "commits", currHEAD), Commit.class);
+        Map currCommitContent = currCommit.getCommitContent();
+        if (currCommitContent.containsKey(fileName)) {
+            String blobName =(String) currCommitContent.get(fileName);
+            File inFile = Utils.join(GITLET_DIR, "blobs", blobName);
+            File outFile = Utils.join(CWD, fileName);
+            Utils.restrictedDelete(outFile); // delete the target file in CWD.
+            Utils.writeContents(outFile, Utils.readContentsAsString(inFile));
+        } else {
+            System.out.println("File does not exist in that commit.");
+        }
+    }
 }

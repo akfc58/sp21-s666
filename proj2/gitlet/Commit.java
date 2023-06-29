@@ -16,7 +16,7 @@ public class Commit implements Serializable {
     /** The parent of this commit. */
     private String parent;
     /** The blobs Set of this commit. */
-    private Set<Map<String, String>> commitContent = new HashSet<>();
+    private Map<String, String> commitContent = new HashMap<>();
 
     public Commit(String m, String p) {
         this.message = m;
@@ -40,17 +40,17 @@ public class Commit implements Serializable {
      * this function update the commit entry of files to be commited.
      * @return
      */
-    private Set<Map<String, String>> updateFile() {
+    private Map<String, String> updateFile() {
         Commit father = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "commits",this.parent), Commit.class);
         Stage e = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "stage"), Stage.class);
-        Set<Map<String, String>> returnVal = new HashSet<>();
+        Map<String, String> returnVal = new HashMap<>();
         if (father.commitContent != null) {
-            returnVal.addAll(father.commitContent);
+            returnVal.putAll(father.commitContent);
         }
         if (e.getToAdd() != null) {
-            returnVal.addAll(e.getToAdd());
+            returnVal.putAll(e.getToAdd());
         }
         return returnVal;
     }
@@ -60,6 +60,10 @@ public class Commit implements Serializable {
         //  this is having a universal method for this class to
         //  calculate a sha1 for each instance.
         return Utils.sha1(Utils.serialize(this));
+    }
+
+    public Map<String, String> getCommitContent() {
+        return commitContent;
     }
 
 }

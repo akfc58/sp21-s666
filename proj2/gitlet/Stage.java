@@ -13,8 +13,8 @@ public class Stage implements Serializable {
     /** Folder that contains the two sets of map of
      * staged files to be 1.added; 2.removed.
      */
-    private Set<Map<String, String>> toAdd = new HashSet<>();
-    private Set<Map<String, String>> toRemove = new HashSet<>();
+    private Map<String, String> toAdd = new HashMap<>();
+    private Map<String, String> toRemove = new HashMap<>();
     private final static File stageDir = Utils.join(Repository.GITLET_DIR, "stage");
 
     /** new runtime stage instance always keep track of  what's persisted before. */
@@ -23,9 +23,7 @@ public class Stage implements Serializable {
     }
 
     public void addStage(String key, String val) {
-        Map<String, String> newAdd = new TreeMap<String, String>();
-        newAdd.put(key, val);
-        toAdd.add(newAdd);
+        toAdd.put(key, val);
         saveStage();
     }
 
@@ -35,8 +33,8 @@ public class Stage implements Serializable {
 
     public void clear() {
         //TODO: clear stage area after a commit.
-        toAdd = new HashSet<>();
-        toRemove = new HashSet<>();
+        toAdd = new HashMap<>();
+        toRemove = new HashMap<>();
         Utils.writeObject(stageDir, this);
     }
 
@@ -59,16 +57,13 @@ public class Stage implements Serializable {
 
     private  void saveStage() {
         Utils.writeObject(stageDir, this);
-        for (Map m : toAdd) {
-            System.out.println(m);
-        }
     }
 
 
-    public Set<Map<String, String>> getToAdd() {
+    public Map<String, String> getToAdd() {
         return toAdd;
     }
-    public Set<Map<String, String>> getToRemove() {
+    public Map<String, String> getToRemove() {
         return toRemove;
     }
 

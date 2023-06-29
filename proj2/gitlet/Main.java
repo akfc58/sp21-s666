@@ -41,7 +41,17 @@ public class Main {
             case "status":
 
             case "checkout":
-
+                if (args.length == 3) { // use equals, not == !!!
+                    Repository.checkoutFile(args[2]);
+                }
+                if (args.length == 4 &&args[1].length() == 40 && args[2] == "--") {
+                    // Repository.checkoutcommitFile();
+                }
+                if (args.length == 2){
+                    // TODO: add arg[1] in branch list.
+                }
+                // Repository.checkoutBranch();
+                break;
             case "branch":
 
             case "rm-branch":
