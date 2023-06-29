@@ -3,8 +3,6 @@ package gitlet;
 import java.io.File;
 import java.util.*;
 
-import static gitlet.Utils.*;
-
 
 /** Represents a gitlet repository.
  *  this Class handles all coordination among the other classes.
@@ -16,7 +14,7 @@ public class Repository {
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
-    public static final File GITLET_DIR = join(CWD, ".gitlet");
+    public static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
     public static String HEAD = "";
     public static List<String> branches = new ArrayList<>();
 
@@ -39,7 +37,8 @@ public class Repository {
         }
         makeDirectories();
         Commit initalCommit = new Commit();
-        writeCommit(initalCommit);
+        writeCommitChangeHEAD(initalCommit);
+
         // TODO: master branch and HEAD branch refs to inital commit.
         // TODO: create all other things in .gitlet. 1. staged 2. objects.
         //  3.refs(pointers as string) 4.logs?
@@ -48,20 +47,21 @@ public class Repository {
 
     /** helper function of init. creates necessary folders. */
     private static void makeDirectories() {
-        File commits = join(GITLET_DIR, "commits");
-        File blobs = join(GITLET_DIR, "blobs");
-        File refs = join(GITLET_DIR, "refs");
+        File commits = Utils.join(GITLET_DIR, "commits");
+        File blobs = Utils.join(GITLET_DIR, "blobs");
+        File refs = Utils.join(GITLET_DIR, "refs");
         GITLET_DIR.mkdir();
         commits.mkdir();
         refs.mkdir();
         blobs.mkdir();
     }
 
-    /** write commit to .gitlet/commits. */
-    private static void writeCommit(Commit c) {
+    /** write commit to .gitlet/commits. change HEAD. */
+    private static void writeCommitChangeHEAD(Commit c) {
         String commitSha1 = c.sha1();
-        File commitFile = join(GITLET_DIR, "commits", commitSha1);
+        File commitFile = Utils.join(GITLET_DIR, "commits", commitSha1);
         Utils.writeObject(commitFile, c);
+        Refs.setSaveHEAD(commitSha1);
     }
 
     /**
@@ -74,12 +74,12 @@ public class Repository {
             System.out.println("No .gitlet! please check.");
             System.exit(0);
         }
-        List<String> allPlainFiles = plainFilenamesIn(CWD);
+        List<String> allPlainFiles = Utils.plainFilenamesIn(CWD);
         if (allPlainFiles!= null && allPlainFiles.contains(fileName)) {
-            String fileContent = readContentsAsString(join(CWD, fileName));
-            String blobSha1Name = sha1(fileContent);
-            File blob = join(GITLET_DIR, "blobs", blobSha1Name);
-            writeContents(blob, fileContent); //TODO: should deal with binary files?
+            String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
+            String blobSha1Name = Utils.sha1(fileContent);
+            File blob = Utils.join(GITLET_DIR, "blobs", blobSha1Name);
+            Utils.writeContents(blob, fileContent); //TODO: should deal with binary files?
             changeStage(fileName, blobSha1Name); // change stage according to newly added blob.
         } else {
             System.out.println("File does not exist.");
@@ -88,14 +88,7 @@ public class Repository {
     }
 
     private static void changeStage(String fileName, String blobName) {
-        File oldStageFile = join(GITLET_DIR, "stage");
-        if (oldStageFile.exists()) {
-            Stage oldStage = readObject(oldStageFile, Stage.class);
-            oldStage.updateStage(fileName, blobName);
-        } else {
-            Stage s = new Stage(fileName, blobName);
-            s.saveStage();
-        }
+            Stage.updateStage(fileName, blobName);
     }
 
     /**
@@ -103,7 +96,7 @@ public class Repository {
      * @param message
      */
     public static void commit(String message) {
-        Commit c = new Commit(message, Commit.getHEAD()); //TODO: this is wrong HEAD.why?
-        writeCommit(c);
+        Commit c = new Commit(message, Refs.getHEAD());
+        writeCommitChangeHEAD(c);
     }
 }

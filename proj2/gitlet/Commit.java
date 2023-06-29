@@ -3,18 +3,12 @@ package gitlet;
 
 import java.io.Serializable;
 import java.util.*;
-import static gitlet.Utils.*;
 
 /** Represents a gitlet commit object.
  *
  *  @author dongliang
  */
 public class Commit implements Serializable {
-    /**
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
 
     /** The message of this Commit. */
     private String message;
@@ -22,10 +16,8 @@ public class Commit implements Serializable {
     private Date timestamp;
     /** The parent of this commit. */
     private String parent;
+    /** The blobs Set of this commit. */
     private Set<Map<String, String>> commitContent = new HashSet<>();
-    /** The Branches of commit. */
-    private static List<Map<String, String>> branches = new ArrayList<>(); // same for all commits.
-    private static String HEAD = ""; // same for all commits.
 
     public Commit(String m, String p) {
         this.message = m;
@@ -43,10 +35,6 @@ public class Commit implements Serializable {
         this.parent = null;
         this.timestamp = new Date(0);// creates the 1970 UTC date.
         this.commitContent = null;
-        HEAD = this.sha1();
-        Map<String, String> newMap = new HashMap<>();
-        newMap.put("master", HEAD);
-        branches.add(newMap);
     }
 
     /**
@@ -54,14 +42,17 @@ public class Commit implements Serializable {
      * @return
      */
     private Set<Map<String, String>> updateFile() {
-        Commit father = Utils.readObject(join(Repository.GITLET_DIR,
+        Commit father = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "commits",this.parent), Commit.class);
-        Stage e = Utils.readObject(join(Repository.GITLET_DIR,
+        Stage e = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "stage"), Stage.class);
         Set<Map<String, String>> returnVal = new HashSet<>();
-        returnVal.addAll(father.commitContent);
-        returnVal.addAll(e.getToAdd());
-        System.out.println(returnVal);
+        if (father.commitContent != null) {
+            returnVal.addAll(father.commitContent);
+        }
+        if (e.getToAdd() != null) {
+            returnVal.addAll(e.getToAdd());
+        }
         return returnVal;
     }
 
@@ -70,13 +61,5 @@ public class Commit implements Serializable {
         //  this is having a universal method for this class to
         //  calculate a sha1 for each instance.
         return Utils.sha1(Utils.serialize(this));
-    }
-
-    /**
-     * get universal HEAD.
-     * @return
-     */
-    public static String getHEAD() {
-        return HEAD;
     }
 }
