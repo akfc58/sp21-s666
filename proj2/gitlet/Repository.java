@@ -197,7 +197,7 @@ public class Repository {
     }
 
     /**
-     * Display all commits ever made. Order does not matter.
+     * Display all commits ever made. Ignore order.
      */
     public static void globalLog() {
         List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
@@ -208,6 +208,26 @@ public class Repository {
             String content = "===\n" + "commit " + commitSha1 + "\n"
                     + "Date: " + formatter.format(d) + "\n" + c.getMessage() + "\n\n";
             System.out.print(content);
+        }
+    }
+
+    /**
+     * Find and print out commit IDs that contains targetMessage.
+     */
+    public static void find(String targetMessage) {
+        List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
+        boolean haveResult = false;
+        for (String commitSha1: allCommit) {
+            File f = Utils.join(GITLET_COMMITS, commitSha1);
+            Commit c = Utils.readObject(f, Commit.class);
+            String commitMessage = c.getMessage();
+            if (targetMessage.equals(commitMessage)) {
+                System.out.println(commitSha1);
+                haveResult = true;
+            }
+        }
+        if (!haveResult) {
+            System.out.println("Found no commit with that message.");
         }
     }
 }

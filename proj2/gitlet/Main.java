@@ -36,7 +36,8 @@ public class Main {
                 Repository.globalLog();
                 break;
             case "find":
-
+                Repository.find(args[1]);
+                break;
             case "status":
 
             case "checkout":
