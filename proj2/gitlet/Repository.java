@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /** Represents a gitlet repository.
@@ -155,16 +156,18 @@ public class Repository {
         File currCommit = Utils.join(GITLET_COMMITS, currSha1);
         Commit c = Utils.readObject(currCommit, Commit.class);
         String content;
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
         while (c.getParent() != null) {
+            Date d = c.getTimestamp();
             content = "===\n" + "commit " + currSha1 + "\n"
-            + "Date: " + "Wed Dec 31 16:00:00 1969 -0800\n" + c.getMessage() +"\n\n";
+            + "Date: " + formatter.format(d) + "\n" + c.getMessage() +"\n\n";
             System.out.print(content);
             currSha1 = c.getParent();
             currCommit = Utils.join(GITLET_COMMITS, currSha1);
             c = Utils.readObject(currCommit, Commit.class);
         }
         content = "===\n" + "commit " + currSha1 + "\n"
-                + "Date: " + "Wed Dec 31 16:00:00 1969 -0800\n" + c.getMessage() +"\n\n";
+                + "Date: " + formatter.format(c.getTimestamp()) + "\n" + c.getMessage() +"\n\n";
         System.out.print(content);
     }
 }
