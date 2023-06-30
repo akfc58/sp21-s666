@@ -1,7 +1,5 @@
 package gitlet;
 
-import java.rmi.server.RemoteRef;
-
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author dongliang
  */
@@ -16,15 +14,12 @@ public class Main {
             System.exit(0);
         }
         String firstArg = args[0];
-        switch(firstArg) {
-            // TODO: If a user inputs a command with the wrong number or format of operands,
-            //  print the message Incorrect operands. and exit.
+        switch (firstArg) {
             case "init":
                 validateNumArgs(args, 1);
                 Repository.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
                 validateNumArgs(args, 2);
                 Repository.add(args[1]);
                 break;
@@ -50,7 +45,7 @@ public class Main {
                 if (args.length == 4) {
                     Repository.checkoutCommitFile(args[1], args[3]); //TODO: do not move HEAD. See specs.
                 }
-                if (args.length == 2){
+                if (args.length == 2) {
                     // TODO: add arg[1] in branch list.
                 }
                 break;
@@ -65,7 +60,6 @@ public class Main {
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);
-            // TODO: FILL THE REST IN
         }
     }
 

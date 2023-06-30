@@ -23,8 +23,6 @@ public class Commit implements Serializable {
         this.parent = p;
         this.timestamp = new Date(); // current date.
         this.commitContent = updateFile();
-
-    //TODO: 1. of parent. 2. of stage toAdd.
     }
 
     /** Create the initial commit with this no argument constructor.
@@ -32,17 +30,17 @@ public class Commit implements Serializable {
     public Commit() {
         this.message = "initial commit";
         this.parent = null;
-        this.timestamp = new Date(0);// creates the 1970 UTC date.
+        this.timestamp = new Date(0); // creates the 1970 UTC date.
         this.commitContent = null;
     }
 
     /**
-     * this function update the commit entry of files to be commited.
+     * this function update the commitContent to files to be commited.
      * @return
      */
     private Map<String, String> updateFile() {
         Commit father = Utils.readObject(Utils.join(Repository.GITLET_DIR,
-                "commits",this.parent), Commit.class);
+                "commits", this.parent), Commit.class);
         Stage e = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "stage"), Stage.class);
         Map<String, String> returnVal = new HashMap<>();

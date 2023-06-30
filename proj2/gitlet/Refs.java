@@ -15,11 +15,13 @@ public class Refs implements Serializable {
     private static String HEAD = "";
     //TODO: branches pointer
 
-    public static void setSaveHEAD(String head) {
+    /** save a given commit's sha1 value which HEAD points at to HEAD_DIR. */
+    public static void SaveHEAD(String head) {
         HEAD = head;
         Utils.writeContents(HEAD_DIR, HEAD);
     }
 
+    /** get HEAD from HEAD_DIR. */
     public static String getHEAD() {
         return Utils.readContentsAsString(HEAD_DIR);
     }

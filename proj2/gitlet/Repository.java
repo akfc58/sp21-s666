@@ -36,8 +36,8 @@ public class Repository {
      */
     public static void init() {
         if (GITLET_DIR.exists()) {
-            System.out.println("A Gitlet version-control system already" +
-                    " exists in the current directory.");
+            System.out.println("A Gitlet version-control system already"
+                    + " exists in the current directory.");
             System.exit(0);
         }
         makeDirectories();
@@ -60,7 +60,7 @@ public class Repository {
         String commitSha1 = c.sha1();
         File commitFile = Utils.join(GITLET_COMMITS, commitSha1);
         Utils.writeObject(commitFile, c);
-        Refs.setSaveHEAD(commitSha1);
+        Refs.SaveHEAD(commitSha1);
     }
 
     /**
@@ -74,7 +74,7 @@ public class Repository {
         }
         List<String> allPlainFiles = Utils.plainFilenamesIn(CWD);
         // make sure that the asked file exists.
-        if (allPlainFiles!= null && allPlainFiles.contains(fileName)) {
+        if (allPlainFiles != null && allPlainFiles.contains(fileName)) {
             String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
             String blobSha1Name = Utils.sha1(fileContent);
             File blob = Utils.join(GITLET_BLOBS, blobSha1Name);
@@ -104,9 +104,9 @@ public class Repository {
             System.out.println("Please enter a commit message.");
             System.exit(0);
         }
-            Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
-            writeCommitChangeHEAD(c);
-            e.clear(); // clear stage area after commit.
+        Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
+        writeCommitChangeHEAD(c);
+        e.clear(); // clear stage area after commit.
     }
 
     /**
@@ -160,14 +160,14 @@ public class Repository {
         while (c.getParent() != null) {
             Date d = c.getTimestamp();
             content = "===\n" + "commit " + currSha1 + "\n"
-            + "Date: " + formatter.format(d) + "\n" + c.getMessage() +"\n\n";
+                    + "Date: " + formatter.format(d) + "\n" + c.getMessage() + "\n\n";
             System.out.print(content);
             currSha1 = c.getParent();
             currCommit = Utils.join(GITLET_COMMITS, currSha1);
             c = Utils.readObject(currCommit, Commit.class);
         }
         content = "===\n" + "commit " + currSha1 + "\n"
-                + "Date: " + formatter.format(c.getTimestamp()) + "\n" + c.getMessage() +"\n\n";
+                + "Date: " + formatter.format(c.getTimestamp()) + "\n" + c.getMessage() + "\n\n";
         System.out.print(content);
     }
 }

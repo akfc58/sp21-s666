@@ -10,12 +10,9 @@ import java.util.*;
  */
 public class Stage implements Serializable {
 
-    /** Folder that contains the two sets of map of
-     * staged files to be 1.added; 2.removed.
-     */
+    private static final File STAGE_DIR = Utils.join(Repository.GITLET_DIR, "stage");
     private Map<String, String> toAdd = new HashMap<>();
     private Map<String, String> toRemove = new HashMap<>();
-    private final static File stageDir = Utils.join(Repository.GITLET_DIR, "stage");
 
     /** new runtime stage instance always keep track of  what's persisted before. */
     public Stage() {
@@ -35,7 +32,7 @@ public class Stage implements Serializable {
         //TODO: clear stage area after a commit.
         toAdd = new HashMap<>();
         toRemove = new HashMap<>();
-        Utils.writeObject(stageDir, this);
+        Utils.writeObject(STAGE_DIR, this);
     }
 
     public  boolean haveStage() {
@@ -46,8 +43,8 @@ public class Stage implements Serializable {
     }
 
     private void readStage() {
-        if (stageDir.exists()) {
-            Stage oldStage = Utils.readObject(stageDir, Stage.class);
+        if (STAGE_DIR.exists()) {
+            Stage oldStage = Utils.readObject(STAGE_DIR, Stage.class);
             this.toAdd = oldStage.toAdd;
             this.toRemove = oldStage.toRemove;
         }
@@ -56,7 +53,7 @@ public class Stage implements Serializable {
 
 
     private  void saveStage() {
-        Utils.writeObject(stageDir, this);
+        Utils.writeObject(STAGE_DIR, this);
     }
 
 
