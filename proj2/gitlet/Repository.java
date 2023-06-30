@@ -76,15 +76,38 @@ public class Repository {
         // make sure that the asked file exists.
         if (allPlainFiles != null && allPlainFiles.contains(fileName)) {
             String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
-            String blobSha1Name = Utils.sha1(fileContent);
-            File blob = Utils.join(GITLET_BLOBS, blobSha1Name);
-            Utils.writeContents(blob, fileContent);
+            String fileBlob = Utils.sha1(fileContent);
             Stage e = new Stage();
-            e.addStage(fileName, blobSha1Name);
+            // if a file is commited in HEAD, changed and added again,
+            // it should not be staged since nothing changed.
+            if (avoidDuplicate(fileName, fileBlob)) {
+                e.deleteItem(fileName);
+            } else {
+                File blob = Utils.join(GITLET_BLOBS, fileBlob);
+                Utils.writeContents(blob, fileContent);
+                e.addStage(fileName, fileBlob);
+            }
         } else {
             System.out.println("File does not exist.");
             System.exit(0);
         }
+    }
+
+    /**
+     * Helper of add. check if FILENAME is in current HEAD commit.
+     * iff true, delete FILENAME in stage area, avoiding duplicated commit of same file
+     * Only returns true if a file is committed, changed, added to stage area
+     * and changed back, added again.
+     */
+    private static boolean avoidDuplicate(String fileName, String fileBlob) {
+        String currHEAD = Utils.readContentsAsString(GITLET_HEAD);
+        File currCommit = Utils.join(GITLET_COMMITS, currHEAD);
+        Commit currC = Utils.readObject(currCommit, Commit.class);
+        Map<String, String> m = currC.getCommitContent();
+        if (m != null && m.containsKey(fileName) && m.get(fileName).equals(fileBlob)) {
+            return true;
+        }
+        return false;
     }
 
     /**

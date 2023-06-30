@@ -20,6 +20,9 @@ public class Stage implements Serializable {
     }
 
     public void addStage(String key, String val) {
+
+            // if the new KEY is already there and sha1 is the same, remove it from
+            // toAdd as there's no need to stage it.
         toAdd.put(key, val);
         saveStage();
     }
@@ -29,10 +32,18 @@ public class Stage implements Serializable {
     }
 
     public void clear() {
-        //TODO: clear stage area after a commit.
         toAdd = new HashMap<>();
         toRemove = new HashMap<>();
         Utils.writeObject(STAGE_DIR, this);
+    }
+
+    public void deleteItem(String key) {
+        //TODO delete item in toAdd.
+        readStage();
+        if (toAdd.containsKey(key)) {
+            toAdd.remove(key);
+        }
+        saveStage();
     }
 
     public  boolean haveStage() {

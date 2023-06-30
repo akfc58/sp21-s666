@@ -39,8 +39,8 @@ public class Commit implements Serializable {
      * @return
      */
     private Map<String, String> updateFile() {
-        Commit father = Utils.readObject(Utils.join(Repository.GITLET_DIR,
-                "commits", this.parent), Commit.class);
+        Commit father = Utils.readObject(Utils.join(Repository.GITLET_COMMITS,
+                this.parent), Commit.class);
         Stage e = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "stage"), Stage.class);
         Map<String, String> returnVal = new HashMap<>();
