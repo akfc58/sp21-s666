@@ -33,7 +33,8 @@ public class Main {
                 Repository.log();
                 break;
             case "global-log":
-
+                Repository.globalLog();
+                break;
             case "find":
 
             case "status":

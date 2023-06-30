@@ -24,6 +24,9 @@ public class Repository {
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
 
+    public static SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
+
+
     /**
      * Initialize the .gitlet folder to contain gitlet opreations.
      * Structure as follows:
@@ -179,7 +182,6 @@ public class Repository {
         File currCommit = Utils.join(GITLET_COMMITS, currSha1);
         Commit c = Utils.readObject(currCommit, Commit.class);
         String content;
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
         while (c.getParent() != null) {
             Date d = c.getTimestamp();
             content = "===\n" + "commit " + currSha1 + "\n"
@@ -192,5 +194,20 @@ public class Repository {
         content = "===\n" + "commit " + currSha1 + "\n"
                 + "Date: " + formatter.format(c.getTimestamp()) + "\n" + c.getMessage() + "\n\n";
         System.out.print(content);
+    }
+
+    /**
+     * Display all commits ever made. Order does not matter.
+     */
+    public static void globalLog() {
+        List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
+        for (String commitSha1: allCommit) {
+            File f = Utils.join(GITLET_COMMITS, commitSha1);
+            Commit c = Utils.readObject(f, Commit.class);
+            Date d = c.getTimestamp();
+            String content = "===\n" + "commit " + commitSha1 + "\n"
+                    + "Date: " + formatter.format(d) + "\n" + c.getMessage() + "\n\n";
+            System.out.print(content);
+        }
     }
 }
