@@ -19,7 +19,9 @@ public class Repository {
     public static final File GITLET_BLOBS = Utils.join(GITLET_DIR, "blobs");
     /** The commits directory. */
     public static final File GITLET_COMMITS = Utils.join(GITLET_DIR, "commits");
-    public static final File GITLET_REFS = Utils.join(GITLET_DIR, "refs"); // TODO: use or not?
+    public static final File GITLET_REFS = Utils.join(GITLET_DIR, "refs");
+    public static final File ACTIVE_DIR = Utils.join(Repository.GITLET_DIR, "REFS", "ACTIVE");
+    public static final File OTHERBRANCH_DIR = Utils.join(Repository.GITLET_DIR, "REFS", "OTHERBRANCH");
     /** The HEAD. */
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
@@ -46,8 +48,9 @@ public class Repository {
         makeDirectories();
         Commit initalCommit = new Commit();
         // constructor without parameters is specific for the initial commit.
-        writeCommitChangeHEAD(initalCommit);
+        writeCommit(initalCommit);
         // TODO: master branch refs to inital commit.
+        String commitSha1 = initalCommit.sha1();
     }
 
     /** helper function of init. creates necessary folders. */
@@ -56,15 +59,26 @@ public class Repository {
         GITLET_BLOBS.mkdir();
         GITLET_COMMITS.mkdir();
         GITLET_REFS.mkdir();
+        ACTIVE_DIR.mkdir();
+        OTHERBRANCH_DIR.mkdir();
     }
 
     /** write commit to .gitlet/commits.
-     * because HEAD changes iff a commit is written. so change HEAD at the same time. */
-    private static void writeCommitChangeHEAD(Commit c) {
+     * because HEAD and active branch(i.e. master)changes iff a commit is written.
+     * so change HEAD and active branch at the same time. */
+    private static void writeCommit(Commit c) {
         String commitSha1 = c.sha1();
         File commitFile = Utils.join(GITLET_COMMITS, commitSha1);
         Utils.writeObject(commitFile, c);
         Refs.SaveHEAD(commitSha1);
+        String currBranch;
+        if (c.getParent() == null) {
+            currBranch = "master";
+        } else {
+            currBranch = Refs.getActiveBranchName();
+        }
+        Refs.setActiveBranch(currBranch, commitSha1);
+
     }
 
     /**
@@ -157,7 +171,7 @@ public class Repository {
             System.exit(0);
         }
         Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
-        writeCommitChangeHEAD(c);
+        writeCommit(c);
         // every commit changes HEAD, so deal with wirte commit in Repo, NOT in commit class.
         e.clear(); // clear stage area after commit.
     }
