@@ -20,7 +20,7 @@ public class Repository {
     /** The commits directory. */
     public static final File GITLET_COMMITS = Utils.join(GITLET_DIR, "commits");
     public static final File GITLET_REFS = Utils.join(GITLET_DIR, "refs");
-    public static final File ACTIVE_DIR = Utils.join(Repository.GITLET_DIR, "REFS", "ACTIVE");
+    public static final File ACTIVE_DIR = Utils.join(Repository.GITLET_REFS, "active");
     /** The HEAD. */
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
