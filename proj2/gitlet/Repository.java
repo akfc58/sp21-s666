@@ -21,7 +21,6 @@ public class Repository {
     public static final File GITLET_COMMITS = Utils.join(GITLET_DIR, "commits");
     public static final File GITLET_REFS = Utils.join(GITLET_DIR, "refs");
     public static final File ACTIVE_DIR = Utils.join(Repository.GITLET_DIR, "REFS", "ACTIVE");
-    public static final File OTHERBRANCH_DIR = Utils.join(Repository.GITLET_DIR, "REFS", "OTHERBRANCH");
     /** The HEAD. */
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
@@ -60,7 +59,6 @@ public class Repository {
         GITLET_COMMITS.mkdir();
         GITLET_REFS.mkdir();
         ACTIVE_DIR.mkdir();
-        OTHERBRANCH_DIR.mkdir();
     }
 
     /** write commit to .gitlet/commits.
@@ -71,14 +69,7 @@ public class Repository {
         File commitFile = Utils.join(GITLET_COMMITS, commitSha1);
         Utils.writeObject(commitFile, c);
         Refs.SaveHEAD(commitSha1);
-        String currBranch;
-        if (c.getParent() == null) {
-            currBranch = "master";
-        } else {
-            currBranch = Refs.getActiveBranchName();
-        }
-        Refs.setActiveBranch(currBranch, commitSha1);
-
+        Refs.moveActiveBranch(commitSha1);
     }
 
     /**
@@ -270,5 +261,15 @@ public class Repository {
         if (!haveResult) {
             System.out.println("Found no commit with that message.");
         }
+    }
+
+    public static void branch(String name) {
+        String currCommit = Refs.getHEAD();
+        // new branch must be at the HEAD commit when it is created.
+        Refs.setBranch(name, currCommit);
+    }
+
+    public static void rmBranch(String name) {
+        Refs.removeBranch(name);
     }
 }
