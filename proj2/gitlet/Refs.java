@@ -32,7 +32,7 @@ public class Refs implements Serializable {
      * delete old active branch and save new KEY, VAL as new branch. */
     public static void moveActiveBranch(String val) {
         List<String> l = Utils.plainFilenamesIn(Repository.ACTIVE_DIR);
-        if (l.isEmpty()) {
+        if (l == null || l.isEmpty()) {
             // There's no active commit, create master.
             Utils.writeContents(Utils.join(Repository.ACTIVE_DIR, "master"), val);
         } else {
