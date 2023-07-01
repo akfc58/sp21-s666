@@ -1,5 +1,6 @@
 package gitlet;
 
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
@@ -61,6 +62,10 @@ public class Refs implements Serializable {
         Utils.writeContents(Utils.join(Repository.GITLET_REFS, key), val);
     }
 
+    public static String getBranch(String key) {
+        return Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, key));
+    }
+
     /** If a branch with the given name does not exist, aborts.
     Print the error message A branch with that name does not exist.
      If you try to remove the branch you’re currently on, aborts,
@@ -81,5 +86,12 @@ public class Refs implements Serializable {
         f.delete(); //TODO careful!
     }
 
+    public static void changeActiveBranch(String newActive) {
+        File oldActiveFile = Utils.join(Repository.GITLET_REFS, "active", Refs.getActiveBranchName());
+        oldActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, Refs.getActiveBranchName()));
+        File newActiveFile = Utils.join(Repository.GITLET_REFS, newActive);
+        newActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, "active", newActive));
+
+    }
     //TODO set other branch. getter of branch.
 }

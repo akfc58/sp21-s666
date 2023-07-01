@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.sql.Ref;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -173,33 +174,88 @@ public class Repository {
      */
     public static void checkoutFile(String fileName) {
         String currHEAD = Utils.readContentsAsString(GITLET_HEAD);
-        File currCommit = Utils.join(GITLET_COMMITS, currHEAD);
-        checkoutFileHelper(currCommit, fileName);
+        checkoutFileHelper(currHEAD, fileName);
     }
 
     /**
      * Checkout File that is in arbitrarly commit, replace it in CWD.
      */
     public static void checkoutCommitFile(String commitBlob, String fileName) {
-        File desCommit = Utils.join(GITLET_COMMITS, commitBlob);
-        checkoutFileHelper(desCommit, fileName);
+        checkoutFileHelper(commitBlob, fileName);
     }
 
     /**
-     * checkout file from current commit and arbitrarly commit is basically the same.
+     * checkout file from current commit and arbitrarly commit are basically the same.
      */
-    private static void checkoutFileHelper(File checkoutCommit, String fileName) {
-
+    private static void checkoutFileHelper(String checkoutCommitSha1, String fileName) {
+        List<String> l = Utils.plainFilenamesIn(GITLET_COMMITS);
+        File checkoutCommit = Utils.join(GITLET_COMMITS, checkoutCommitSha1);
+        if (!l.contains(checkoutCommitSha1)) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
         Commit c = Utils.readObject(checkoutCommit, Commit.class);
         Map<String, String> content = c.getCommitContent();
         if (content.containsKey(fileName)) {
             String blobName = content.get(fileName);
             File inFile = Utils.join(GITLET_BLOBS, blobName);
             File outFile = Utils.join(CWD, fileName);
-            Utils.restrictedDelete(outFile); // delete the target file in CWD. (guaranteed there!)
+            Utils.restrictedDelete(outFile);
+            // delete the target file in CWD. if it is not there, won't error.
             Utils.writeContents(outFile, Utils.readContentsAsString(inFile));
         } else {
             System.out.println("File does not exist in that commit.");
+            System.exit(0);
+        }
+    }
+
+    public static void checkoutBranch(String branch) {
+        //TODO: modify staging area.
+        if (branch.equals(Refs.getActiveBranchName())) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        List<String> cwdFileList = Utils.plainFilenamesIn(CWD);
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
+        Map<String, String> currCommitContent = currCommit.getCommitContent();
+        for (String eachCWDFile: cwdFileList) {
+            if (!currCommitContent.containsKey(eachCWDFile)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+        // made sure that checkout branch: 1.have untracked file alone the way.
+        // 2.checked active branch out.
+        List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
+        if (branchList == null || branchList.isEmpty()) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+            // if there's no other branches, then checkout branch does not exist.
+        }
+        if (!branchList.contains(branch)) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        }
+        //TODO: order matters! check!!
+        Commit branchCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getBranch(branch)), Commit.class);
+        Map<String, String> branchCommitContent = branchCommit.getCommitContent();
+        checkoutBranchhelper(branchCommitContent, cwdFileList);
+        Refs.changeActiveBranch(branch);
+        Stage e =new Stage();
+        e.clear();
+
+    }
+
+    private static void checkoutBranchhelper(Map<String, String> commitContent, List<String> cwdFileList) {
+        for (String each: cwdFileList) {
+            File eachFile = Utils.join(CWD, each);
+            Utils.restrictedDelete(eachFile);
+            // delete every cwd file.
+        }
+        for (String eachkey: commitContent.keySet()) {
+            String eachval = commitContent.get(eachkey);
+            String eachContent = Utils.readContentsAsString(Utils.join(GITLET_BLOBS, eachval));
+            Utils.writeContents(Utils.join(CWD, eachkey), eachContent);
         }
     }
 

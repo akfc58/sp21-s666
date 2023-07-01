@@ -54,6 +54,7 @@ public class Main {
                 }
                 if (args.length == 2) {
                     // TODO: add arg[1] in branch list.
+                    Repository.checkoutBranch(args[1]);
                 }
                 break;
             case "branch":
