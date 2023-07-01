@@ -50,6 +50,11 @@ public class Commit implements Serializable, Dumpable{
         if (e.getToAdd() != null) {
             returnVal.putAll(e.getToAdd());
         }
+        if (e.getToRemove() != null) {
+            for (String fileToRemove: e.getToRemove()) {
+                returnVal.remove(fileToRemove);
+            }
+        }
         return returnVal;
     }
 

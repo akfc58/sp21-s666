@@ -28,14 +28,19 @@ public class Main {
                 Repository.commit(args[1]);
                 break;
             case "rm":
-
+                validateNumArgs(args, 2);
+                Repository.rm(args[1]);
+                break;
             case "log":
+                validateNumArgs(args, 1);
                 Repository.log();
                 break;
             case "global-log":
+                validateNumArgs(args, 1);
                 Repository.globalLog();
                 break;
             case "find":
+                validateNumArgs(args, 2);
                 Repository.find(args[1]);
                 break;
             case "status":

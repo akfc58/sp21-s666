@@ -114,10 +114,35 @@ public class Repository {
         return false;
     }
 
+    public static void rm(String fileName) {
+        // TODO 1. if fileName is in stage, remove it from stage.toAdd, and save.
+        //  2.if it is in HEAD commit, add fileName to toRemove and remove it in next commit.
+        //  stage it for removal and remove the file from the working directory if the user
+        //  has not already done so (do not remove it unless it is tracked in the current commit).
+        boolean fileExist = false;
+        Stage e = new Stage();
+        if (e.getToAdd().containsKey(fileName)) {
+            e.deleteItem(fileName);
+            Utils.restrictedDelete(Utils.join(CWD, fileName));
+            fileExist = true;
+        }
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
+        if (currCommit.getCommitContent().containsKey(fileName)) {
+            e.removeStage(fileName);
+            Utils.restrictedDelete(Utils.join(CWD, fileName));
+            // add fileName to toRemove. Deal with actual removal in Commit constructor.
+            fileExist = true;
+        }
+        if (!fileExist) {
+            System.out.println("No reason to remove the file.");
+        }
+    }
+
     /**
      * Receives commit message, make a new commit according to stage area and old commit.
      */
     public static void commit(String message) {
+        //TODO: Finally, files tracked in the current commit may be untracked in the new commit as a result being staged for removal by the rm command (below).
         if (!GITLET_DIR.exists()) {
             System.out.println("No .gitlet! please check.");
             System.exit(0);
@@ -133,6 +158,7 @@ public class Repository {
         }
         Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
         writeCommitChangeHEAD(c);
+        // every commit changes HEAD, so deal with wirte commit in Repo, NOT in commit class.
         e.clear(); // clear stage area after commit.
     }
 
