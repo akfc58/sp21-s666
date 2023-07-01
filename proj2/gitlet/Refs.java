@@ -14,13 +14,11 @@ public class Refs implements Serializable {
     /** dir of HEAD. */
     private static final File HEAD_DIR = Utils.join(Repository.GITLET_DIR, "HEAD");
     /** the refs: HEAD, activeBranch, otherBranch. */
-    private static String HEAD;
     //TODO: branches pointer
 
     /** save a given commit's sha1 value which HEAD points at to HEAD_DIR. */
     public static void SaveHEAD(String head) {
-        HEAD = head;
-        Utils.writeContents(HEAD_DIR, HEAD);
+        Utils.writeContents(HEAD_DIR, head);
     }
 
     /** get HEAD from HEAD_DIR. */
@@ -86,12 +84,13 @@ public class Refs implements Serializable {
         f.delete(); //TODO careful!
     }
 
+    /** exchange branch, change HEAD accordingly. */
     public static void changeActiveBranch(String newActive) {
         File oldActiveFile = Utils.join(Repository.GITLET_REFS, "active", Refs.getActiveBranchName());
         oldActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, Refs.getActiveBranchName()));
         File newActiveFile = Utils.join(Repository.GITLET_REFS, newActive);
         newActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, "active", newActive));
-
+        Refs.SaveHEAD(Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, "active", newActive)));
     }
     //TODO set other branch. getter of branch.
 }

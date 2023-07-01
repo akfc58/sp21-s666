@@ -88,5 +88,6 @@ public class Commit implements Serializable, Dumpable{
         System.out.println(this.getTimestamp().toString());
         System.out.println(this.getMessage());
         System.out.println(this.getCommitContent());
+        System.out.println(this.getParent());
     }
 }
