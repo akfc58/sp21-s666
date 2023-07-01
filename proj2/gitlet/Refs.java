@@ -12,7 +12,7 @@ public class Refs implements Serializable {
     /** dir of HEAD. */
     private static final File HEAD_DIR = Utils.join(Repository.GITLET_DIR, "HEAD");
     /** the refs. */
-    private static String HEAD = "";
+    private static String HEAD;
     //TODO: branches pointer
 
     /** save a given commit's sha1 value which HEAD points at to HEAD_DIR. */

@@ -44,7 +44,8 @@ public class Repository {
             System.exit(0);
         }
         makeDirectories();
-        Commit initalCommit = new Commit(); // constructor without parameters is specific for the initial commit.
+        Commit initalCommit = new Commit();
+        // constructor without parameters is specific for the initial commit.
         writeCommitChangeHEAD(initalCommit);
         // TODO: master branch refs to inital commit.
     }

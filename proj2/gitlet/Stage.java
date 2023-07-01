@@ -11,8 +11,8 @@ import java.util.*;
 public class Stage implements Serializable {
 
     private static final File STAGE_DIR = Utils.join(Repository.GITLET_DIR, "stage");
-    private Map<String, String> toAdd = new HashMap<>();
-    private Map<String, String> toRemove = new HashMap<>();
+    private Map<String, String> toAdd = new TreeMap<>();
+    private Map<String, String> toRemove = new TreeMap<>();
 
     /** new runtime stage instance always keep track of  what's persisted before. */
     public Stage() {
@@ -32,8 +32,8 @@ public class Stage implements Serializable {
     }
 
     public void clear() {
-        toAdd = new HashMap<>();
-        toRemove = new HashMap<>();
+        toAdd = new TreeMap<>();
+        toRemove = new TreeMap<>();
         Utils.writeObject(STAGE_DIR, this);
     }
 

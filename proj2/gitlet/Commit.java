@@ -16,7 +16,7 @@ public class Commit implements Serializable {
     /** The parent of this commit. Represented in sha-1 value. */
     private String parent;
     /** The blobs Set of this commit. */
-    private Map<String, String> commitContent = new HashMap<>();
+    private Map<String, String> commitContent = new TreeMap<>();
 
     public Commit(String m, String p) {
         this.message = m;
@@ -43,7 +43,7 @@ public class Commit implements Serializable {
                 this.parent), Commit.class);
         Stage e = Utils.readObject(Utils.join(Repository.GITLET_DIR,
                 "stage"), Stage.class);
-        Map<String, String> returnVal = new HashMap<>();
+        Map<String, String> returnVal = new TreeMap<>();
         if (father.commitContent != null) {
             returnVal.putAll(father.commitContent);
         }
