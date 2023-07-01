@@ -7,7 +7,7 @@ import java.util.*;
  *
  *  @author dongliang
  */
-public class Commit implements Serializable {
+public class Commit implements Serializable, Dumpable{
 
     /** The message of this Commit. */
     private String message;
@@ -75,5 +75,13 @@ public class Commit implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public void dump() {
+        System.out.println(this.sha1());
+        System.out.println(this.getTimestamp().toString());
+        System.out.println(this.getMessage());
+        System.out.println(this.getCommitContent());
     }
 }

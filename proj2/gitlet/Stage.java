@@ -8,7 +8,7 @@ import java.util.*;
  * includes files staged to be added and
  * files staged to be removed.
  */
-public class Stage implements Serializable {
+public class Stage implements Serializable, Dumpable {
 
     private static final File STAGE_DIR = Utils.join(Repository.GITLET_DIR, "stage");
     private Map<String, String> toAdd = new TreeMap<>();
@@ -75,4 +75,9 @@ public class Stage implements Serializable {
         return toRemove;
     }
 
+    @Override
+    public void dump() {
+        System.out.println(this.getToAdd());
+        System.out.println(this.getToRemove());
+    }
 }
