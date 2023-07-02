@@ -1,8 +1,6 @@
 package gitlet;
 
 import java.io.File;
-import java.sql.Array;
-import java.sql.Ref;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -35,10 +33,11 @@ public class Repository {
      * Structure as follows:
      * .gitlet/ -- top level folder for all persistent data in your lab12 folder
      *    - stage -- a file containing all staged files' map of added/removed name and its blob.
-     *    - refs/ //TODO
      *    - blobs/ -- different version of files. name in sha-1.
      *    - commits/ -- commits. name in sha-1.
-     *    - log //TODO
+     *    - refs/
+     *       - active/
+     *       - otherbranches
      */
     public static void init() {
         if (GITLET_DIR.exists()) {
@@ -50,8 +49,6 @@ public class Repository {
         Commit initalCommit = new Commit();
         // constructor without parameters is specific for the initial commit.
         writeCommit(initalCommit);
-        // TODO: master branch refs to inital commit.
-        String commitSha1 = initalCommit.sha1();
     }
 
     /** helper function of init. creates necessary folders. */
@@ -91,8 +88,10 @@ public class Repository {
             Stage e = new Stage();
             // if a file is commited in HEAD, changed and added again,
             // it should not be staged since nothing changed.
-            if (avoidDuplicate(fileName, fileBlob)) {
-                e.deleteItem(fileName);
+            if (jugdeSameFileInHEAD(fileName, fileBlob)) {
+                // add is invaild, delete corresponding item in stage toAdd and toRemove.
+                e.deleteItemInToAdd(fileName);
+                e.deleteItemInToRemove(fileName);
             } else {
                 File blob = Utils.join(GITLET_BLOBS, fileBlob);
                 Utils.writeContents(blob, fileContent);
@@ -107,10 +106,14 @@ public class Repository {
     /**
      * Helper of add. check if FILENAME is in current HEAD commit.
      * iff true, delete FILENAME in stage area, avoiding duplicated commit of same file
-     * Only returns true if a file is committed, changed, added to stage area
+     * Returns true if:1. a file is committed, changed, added to stage area
      * and changed back, added again.
+     * 2. a file is committed, removed (added to toRemove in stage), add added back again.
+     * these two situations have one thing in common, which is the current HEAD commit
+     * must have the FILENAME in it with same sha1 value as the newly added FILENAME.
+     * Thus, this function returns true when add is invaild.
      */
-    private static boolean avoidDuplicate(String fileName, String fileBlob) {
+    private static boolean jugdeSameFileInHEAD(String fileName, String fileBlob) {
         String currHEAD = Utils.readContentsAsString(GITLET_HEAD);
         File currCommit = Utils.join(GITLET_COMMITS, currHEAD);
         Commit currC = Utils.readObject(currCommit, Commit.class);
@@ -126,22 +129,20 @@ public class Repository {
         //  2.if it is in HEAD commit, add fileName to toRemove and remove it in next commit.
         //  stage it for removal and remove the file from the working directory if the user
         //  has not already done so (do not remove it unless it is tracked in the current commit).
-        boolean fileExist = false;
         Stage e = new Stage();
-        if (e.getToAdd().containsKey(fileName)) {
-            e.deleteItem(fileName);
-            Utils.restrictedDelete(Utils.join(CWD, fileName));
-            fileExist = true;
-        }
         Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
-        if (currCommit.getCommitContent().containsKey(fileName)) {
+        Map<String, String> currCommitContent = currCommit.getCommitContent();
+        if (e.getToAdd().containsKey(fileName)) {
+            e.deleteItemInToAdd(fileName);
+            // file in stage area is not tracked, so do not delete it.
+        }else if (currCommitContent != null && currCommitContent.containsKey(fileName)) {
             e.removeStage(fileName);
             Utils.restrictedDelete(Utils.join(CWD, fileName));
             // add fileName to toRemove. Deal with actual removal in Commit constructor.
-            fileExist = true;
-        }
-        if (!fileExist) {
+        } else {
+            // Failure case stick to spec.
             System.out.println("No reason to remove the file.");
+            System.exit(0);
         }
     }
 
@@ -191,7 +192,7 @@ public class Repository {
     private static void checkoutFileHelper(String checkoutCommitSha1, String fileName) {
         List<String> l = Utils.plainFilenamesIn(GITLET_COMMITS);
         File checkoutCommit = Utils.join(GITLET_COMMITS, checkoutCommitSha1);
-        if (!l.contains(checkoutCommitSha1)) {
+        if (l != null && !l.contains(checkoutCommitSha1)) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
@@ -279,8 +280,9 @@ public class Repository {
             // delete every cwd file.
         }
         if (commitContent == null) {
-            // if checked out initial commit.
-            System.exit(0);
+            // if checked out initial commit, there's nothing to checkout.
+            // continue original operation.
+            return;
         }
         for (String eachkey: commitContent.keySet()) {
             String eachval = commitContent.get(eachkey);
@@ -368,11 +370,9 @@ public class Repository {
         List<String> otherBranch = Utils.plainFilenamesIn(GITLET_REFS);
         java.util.Collections.sort(otherBranch);
         Stage e = new Stage();
-        List<String> toAdd = new ArrayList<>();
-        toAdd.addAll(e.getToAdd().keySet());
+        List<String> toAdd = new ArrayList<>(e.getToAdd().keySet());
         java.util.Collections.sort(toAdd);
-        List<String> toRemove = new ArrayList<>();
-        toRemove.addAll(e.getToRemove());
+        List<String> toRemove = new ArrayList<>(e.getToRemove());
         java.util.Collections.sort(toRemove);
 
         System.out.println("=== Branches ===");
@@ -380,22 +380,22 @@ public class Repository {
         for (String branch: otherBranch) {
             System.out.println(branch);
         }
-        System.out.println("");
+        System.out.println();
         System.out.println("=== Staged Files ===");
         for (String stagedFile: toAdd) {
             System.out.println(stagedFile);
         }
-        System.out.println("");
+        System.out.println();
         System.out.println("=== Removed Files ===");
         for (String removedFile: toRemove) {
             System.out.println(removedFile);
         }
-        System.out.println("");
+        System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
         //TODO
-        System.out.println("");
+        System.out.println();
         System.out.println("=== Untracked Files ===");
-        System.out.println("");
+        System.out.println();
         //TODO
     }
 }

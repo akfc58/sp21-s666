@@ -38,12 +38,17 @@ public class Stage implements Serializable, Dumpable {
         Utils.writeObject(STAGE_DIR, this);
     }
 
-    public void deleteItem(String key) {
-        //TODO delete item in toAdd.
+    public void deleteItemInToAdd(String key) {
         readStage();
-        if (toAdd.containsKey(key)) {
-            toAdd.remove(key);
-        }
+        // does not matter if key is not acutally in toAdd.
+        toAdd.remove(key);
+        saveStage();
+    }
+
+    public void deleteItemInToRemove(String key) {
+        readStage();
+        // does not matter if key is not acutally in toAdd.
+        toRemove.remove(key);
         saveStage();
     }
 
