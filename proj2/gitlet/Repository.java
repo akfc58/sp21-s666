@@ -209,8 +209,12 @@ public class Repository {
         }
     }
 
+    /** Checkout branch iff:
+     * 1. it is not the active branch
+     * 2. every file in cwd is tracked in current commit.
+     * 3. the checked-out branch actually exists.
+     */
     public static void checkoutBranch(String branch) {
-        //TODO: modify staging area.
         if (branch.equals(Refs.getActiveBranchName())) {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
@@ -224,38 +228,64 @@ public class Repository {
                 System.exit(0);
             }
         }
-        // made sure that checkout branch: 1.have untracked file alone the way.
-        // 2.checked active branch out.
         List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
-        if (branchList == null || branchList.isEmpty()) {
+        if (branchList == null || branchList.isEmpty() || !branchList.contains(branch)) {
             System.out.println("No such branch exists.");
             System.exit(0);
             // if there's no other branches, then checkout branch does not exist.
         }
-        if (!branchList.contains(branch)) {
-            System.out.println("No such branch exists.");
-            System.exit(0);
-        }
         //TODO: order matters! check!!
         Commit branchCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getBranch(branch)), Commit.class);
         Map<String, String> branchCommitContent = branchCommit.getCommitContent();
-        checkoutBranchhelper(branchCommitContent, cwdFileList);
+        checkouthelper(branchCommitContent, cwdFileList);
+        // clean CWD, and checkout real files in branchCommitContent.
         Refs.changeActiveBranch(branch);
         Stage e =new Stage();
         e.clear();
 
     }
 
-    private static void checkoutBranchhelper(Map<String, String> commitContent, List<String> cwdFileList) {
+    public static void reset(String commitID) {
+        List<String> cwdFileList = Utils.plainFilenamesIn(CWD);
+        Commit targetCommit = Utils.readObject(Utils.join(GITLET_COMMITS, commitID), Commit.class);
+        Map<String, String> targetCommitContent = targetCommit.getCommitContent();
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
+        Map<String, String> currCommitContent = currCommit.getCommitContent();
+        for (String eachCWDFile: cwdFileList) {
+            if (!currCommitContent.containsKey(eachCWDFile)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+        List<String> commitList = Utils.plainFilenamesIn(GITLET_COMMITS);
+        if (!commitList.contains(commitID)) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+            // if there's no other branches, then checkout branch does not exist.
+        }
+        checkouthelper(targetCommitContent, cwdFileList);
+    }
+
+    /**
+     * delete every file in CWD, and checkout all files in given commitContent.
+     * WARNING: use this helper iff current CWD files is tracked in old branch!
+     * otherwise, you'll lose data.
+     */
+    private static void checkouthelper(Map<String, String> commitContent, List<String> cwdFileList) {
         for (String each: cwdFileList) {
             File eachFile = Utils.join(CWD, each);
             Utils.restrictedDelete(eachFile);
             // delete every cwd file.
         }
+        if (commitContent == null) {
+            // if checked out initial commit.
+            System.exit(0);
+        }
         for (String eachkey: commitContent.keySet()) {
             String eachval = commitContent.get(eachkey);
             String eachContent = Utils.readContentsAsString(Utils.join(GITLET_BLOBS, eachval));
             Utils.writeContents(Utils.join(CWD, eachkey), eachContent);
+            // checkout all files in given commitContent.
         }
     }
 

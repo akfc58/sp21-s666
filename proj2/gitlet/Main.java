@@ -66,7 +66,9 @@ public class Main {
                 Repository.rmBranch(args[1]);
                 break;
             case "reset":
-
+                validateNumArgs(args, 2);
+                Repository.reset(args[1]);
+                break;
             case "merge":
 
             default:
