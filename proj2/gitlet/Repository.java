@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.sql.Array;
 import java.sql.Ref;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -357,5 +358,44 @@ public class Repository {
 
     public static void rmBranch(String name) {
         Refs.removeBranch(name);
+    }
+
+    /**
+     * Displays all gitlet information in given format.
+     */
+    public static void status() {
+        List<String> active = Utils.plainFilenamesIn(Utils.join(GITLET_REFS,"active"));
+        List<String> otherBranch = Utils.plainFilenamesIn(GITLET_REFS);
+        java.util.Collections.sort(otherBranch);
+        Stage e = new Stage();
+        List<String> toAdd = new ArrayList<>();
+        toAdd.addAll(e.getToAdd().keySet());
+        java.util.Collections.sort(toAdd);
+        List<String> toRemove = new ArrayList<>();
+        toRemove.addAll(e.getToRemove());
+        java.util.Collections.sort(toRemove);
+
+        System.out.println("=== Branches ===");
+        System.out.println("*" + active.get(0));
+        for (String branch: otherBranch) {
+            System.out.println(branch);
+        }
+        System.out.println("");
+        System.out.println("=== Staged Files ===");
+        for (String stagedFile: toAdd) {
+            System.out.println(stagedFile);
+        }
+        System.out.println("");
+        System.out.println("=== Removed Files ===");
+        for (String removedFile: toRemove) {
+            System.out.println(removedFile);
+        }
+        System.out.println("");
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        //TODO
+        System.out.println("");
+        System.out.println("=== Untracked Files ===");
+        System.out.println("");
+        //TODO
     }
 }

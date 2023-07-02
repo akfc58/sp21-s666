@@ -44,7 +44,9 @@ public class Main {
                 Repository.find(args[1]);
                 break;
             case "status":
-
+                validateNumArgs(args, 1);
+                Repository.status();
+                break;
             case "checkout":
                 if (args.length == 3) { // use equals, not == !!!
                     Repository.checkoutFile(args[2]);
