@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.Console;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -231,7 +232,7 @@ public class Repository {
             System.exit(0);
         }
         String currCommitID = Refs.getHEAD();
-        if (!untrackedFiles(currCommitID).isEmpty()) {
+        if (ifOverWrite(currCommitID)) {
             System.out.println("There is an untracked file in the way;" +
                     " delete it, or add and commit it first.");
             System.exit(0);
@@ -296,6 +297,32 @@ public class Repository {
         return untrackedFiles;
     }
 
+    /**
+     * A branch checkout or commit reset is considered overwrite if:
+     * 1. the checkout commit is empty, but there's something untracked
+     * in the CWD.
+     * 2. there is something untracked would have been overwritten by
+     * checked-out commit.
+     */
+    private static boolean ifOverWrite(String commitID) {
+        Commit c = Utils.readObject(Utils.join(GITLET_COMMITS, commitID), Commit.class);
+        Map<String, String> content = c.getCommitContent();
+        List<String> untracked = untrackedFiles(Refs.getHEAD());
+        if (untracked.isEmpty()) {
+            return false;
+        }
+        for (String eachUntracked : untracked) {
+            if (content != null) {
+                if (content.containsKey(eachUntracked)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static List<String> modifiedFiles() {
         //TODO: There is an empty line between sections, and the entire status ends in
         // an empty line as well. Entries should be listed in lexicographic order,
@@ -346,14 +373,17 @@ public class Repository {
 
     public static void reset(String commitID) {
         String currCommitID = Refs.getHEAD();
-        if (!untrackedFiles(currCommitID).isEmpty()) {
-            System.out.println("There is an untracked file in the way;" +
-                    " delete it, or add and commit it first.");
-            System.exit(0);
-        }
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, currCommitID), Commit.class);
+        Map<String, String> content = currCommit.getCommitContent();
+        List<String> untracked = untrackedFiles(currCommitID);
         List<String> commitList = Utils.plainFilenamesIn(GITLET_COMMITS);
         if (commitList == null || !commitList.contains(commitID)) {
             System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        if (ifOverWrite(commitID)) {
+            System.out.println("There is an untracked file in the way;" +
+                    " delete it, or add and commit it first.");
             System.exit(0);
         }
         manipulateCWD(currCommitID, commitID);
