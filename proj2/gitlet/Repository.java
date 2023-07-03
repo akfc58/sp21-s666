@@ -4,24 +4,35 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/** Represents a gitlet repository.
- *  this Class handles all coordination among the other classes.
+/**
+ * Represents a gitlet repository.
+ * this Class handles all coordination among the other classes.
  *
- *  @author dongliang
+ * @author dongliang
  */
 public class Repository {
 
-    /** The current working directory. */
+    /**
+     * The current working directory.
+     */
     public static final File CWD = new File(System.getProperty("user.dir"));
-    /** The .gitlet directory. */
+    /**
+     * The .gitlet directory.
+     */
     public static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
-    /** The blobs dicrectory. */
+    /**
+     * The blobs dicrectory.
+     */
     public static final File GITLET_BLOBS = Utils.join(GITLET_DIR, "blobs");
-    /** The commits directory. */
+    /**
+     * The commits directory.
+     */
     public static final File GITLET_COMMITS = Utils.join(GITLET_DIR, "commits");
     public static final File GITLET_REFS = Utils.join(GITLET_DIR, "refs");
     public static final File ACTIVE_DIR = Utils.join(Repository.GITLET_REFS, "active");
-    /** The HEAD. */
+    /**
+     * The HEAD.
+     */
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
 
@@ -32,12 +43,12 @@ public class Repository {
      * Initialize the .gitlet folder to contain gitlet opreations.
      * Structure as follows:
      * .gitlet/ -- top level folder for all persistent data in your lab12 folder
-     *    - stage -- a file containing all staged files' map of added/removed name and its blob.
-     *    - blobs/ -- different version of files. name in sha-1.
-     *    - commits/ -- commits. name in sha-1.
-     *    - refs/
-     *       - active/
-     *       - otherbranches
+     * - stage -- a file containing all staged files' map of added/removed name and its blob.
+     * - blobs/ -- different version of files. name in sha-1.
+     * - commits/ -- commits. name in sha-1.
+     * - refs/
+     * - active/
+     * - otherbranches
      */
     public static void init() {
         if (GITLET_DIR.exists()) {
@@ -51,7 +62,9 @@ public class Repository {
         writeCommit(initalCommit);
     }
 
-    /** helper function of init. creates necessary folders. */
+    /**
+     * helper function of init. creates necessary folders.
+     */
     private static void makeDirectories() {
         GITLET_DIR.mkdir();
         GITLET_BLOBS.mkdir();
@@ -60,9 +73,11 @@ public class Repository {
         ACTIVE_DIR.mkdir();
     }
 
-    /** write commit to .gitlet/commits.
+    /**
+     * write commit to .gitlet/commits.
      * because HEAD and active branch(i.e. master)changes iff a commit is written.
-     * so change HEAD and active branch at the same time. */
+     * so change HEAD and active branch at the same time.
+     */
     private static void writeCommit(Commit c) {
         String commitSha1 = c.sha1();
         File commitFile = Utils.join(GITLET_COMMITS, commitSha1);
@@ -108,7 +123,7 @@ public class Repository {
      * iff true, delete FILENAME in stage area, avoiding duplicated commit of same file
      * Returns true if:1. a file is committed, changed, added to stage area
      * and changed back, added again.
-     * 2. a file is committed, removed (added to toRemove in stage), add added back again.
+     * 2. a file is committed, removed (added to toRemove in stage), added back again.
      * these two situations have one thing in common, which is the current HEAD commit
      * must have the FILENAME in it with same sha1 value as the newly added FILENAME.
      * Thus, this function returns true when add is invaild.
@@ -132,7 +147,7 @@ public class Repository {
         } else if (currCommitContent != null && currCommitContent.containsKey(fileName)) {
             String fileContent = "";
             if (f.exists()) {
-               fileContent = Utils.readContentsAsString(f);
+                fileContent = Utils.readContentsAsString(f);
             }
             String fileBlob = Utils.sha1(fileContent);
             e.removeStage(fileName, fileBlob);
@@ -189,7 +204,7 @@ public class Repository {
 
     public static String shortCommitIDHelper(String shortID) {
         List<String> commits = Utils.plainFilenamesIn(GITLET_COMMITS);
-        for (String each: commits) {
+        for (String each : commits) {
             if (each.contains(shortID)) {
                 return each;
             }
@@ -222,7 +237,8 @@ public class Repository {
         }
     }
 
-    /** Checkout branch iff:
+    /**
+     * Checkout branch iff:
      * 1. it is not the active branch
      * 2. every file in cwd is tracked in current commit.
      * 3. the checked-out branch actually exists.
@@ -267,17 +283,17 @@ public class Repository {
         File commitFile = Utils.join(GITLET_COMMITS, commitID);
         Commit c = Utils.readObject(commitFile, Commit.class);
         Map<String, String> content = c.getCommitContent();
-        List<String> CWDFiles = Utils.plainFilenamesIn(CWD);
+        List<String> cwdFiles = Utils.plainFilenamesIn(CWD);
         List<String> untrackedFiles = new ArrayList<>();
 
         Stage e = new Stage();
         Map<String, String> toAdd = e.getToAdd();
         Map<String, String> toRemove = e.getToRemove();
 
-        if (CWDFiles == null) {
+        if (cwdFiles == null) {
             return untrackedFiles;
         }
-        for (String each : CWDFiles) {
+        for (String each : cwdFiles) {
             // A file is tracked when:
             // 1. it's name is in current commit OR
             // 2. in staged toAdd.
@@ -338,7 +354,8 @@ public class Repository {
         //Tracked in the current commit, changed in the working directory, but not staged; or
         //Staged for addition, but with different contents than in the working directory; or
         //Staged for addition, but deleted in the working directory; or
-        //Not staged for removal, but tracked in the current commit and deleted from the working directory.
+        //Not staged for removal, but tracked in the current commit and
+        // deleted from the working directory.
         return null;
     }
 
@@ -428,7 +445,7 @@ public class Repository {
     public static void globalLog() {
         List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
         if (allCommit != null) {
-            for (String commitSha1: allCommit) {
+            for (String commitSha1 : allCommit) {
                 File f = Utils.join(GITLET_COMMITS, commitSha1);
                 Commit c = Utils.readObject(f, Commit.class);
                 Date d = c.getTimestamp();
@@ -446,7 +463,7 @@ public class Repository {
         List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
         boolean haveResult = false;
         if (allCommit != null) {
-            for (String commitSha1: allCommit) {
+            for (String commitSha1 : allCommit) {
                 File f = Utils.join(GITLET_COMMITS, commitSha1);
                 Commit c = Utils.readObject(f, Commit.class);
                 String commitMessage = c.getMessage();
@@ -493,18 +510,18 @@ public class Repository {
         System.out.println("*" + active.get(0));
         // can never be null.
         if (otherBranch != null) {
-            for (String branch: otherBranch) {
+            for (String branch : otherBranch) {
                 System.out.println(branch);
             }
         }
         System.out.println();
         System.out.println("=== Staged Files ===");
-        for (String stagedFile: toAdd) {
+        for (String stagedFile : toAdd) {
             System.out.println(stagedFile);
         }
         System.out.println();
         System.out.println("=== Removed Files ===");
-        for (String removedFile: toRemove) {
+        for (String removedFile : toRemove) {
             System.out.println(removedFile);
         }
         System.out.println();
@@ -512,7 +529,7 @@ public class Repository {
         //TODO
         System.out.println();
         System.out.println("=== Untracked Files ===");
-        for (String untracked: untrackedFiles(Refs.getHEAD())) {
+        for (String untracked : untrackedFiles(Refs.getHEAD())) {
             System.out.println(untracked);
         }
         System.out.println();

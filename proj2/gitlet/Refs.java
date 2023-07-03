@@ -83,10 +83,13 @@ public class Refs implements Serializable {
 
     /** exchange branch, change HEAD accordingly. */
     public static void changeActiveBranch(String newActive) {
-        File oldActiveFile = Utils.join(Repository.GITLET_REFS, "active", Refs.getActiveBranchName());
-        oldActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, Refs.getActiveBranchName()));
+        File oldActiveFile = Utils.join(Repository.GITLET_REFS,
+                "active", Refs.getActiveBranchName());
+        oldActiveFile.renameTo(Utils.join(Repository.GITLET_REFS,
+                Refs.getActiveBranchName()));
         File newActiveFile = Utils.join(Repository.GITLET_REFS, newActive);
         newActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, "active", newActive));
-        Refs.saveHEAD(Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, "active", newActive)));
+        Refs.saveHEAD(Utils.readContentsAsString(Utils.join(
+                Repository.GITLET_REFS, "active", newActive)));
     }
 }
