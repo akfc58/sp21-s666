@@ -50,10 +50,9 @@ public class Main {
             case "checkout":
                 if (args.length == 3) { // use equals, not == !!!
                     Repository.checkoutFile(args[2]);
-                } else if (args.length == 4 && args[2].equals("--") ) {
-                    Repository.checkoutCommitFile(args[1], args[3]); //TODO: do not move HEAD. See specs.
+                } else if (args.length == 4 && args[2].equals("--")) {
+                    Repository.checkoutCommitFile(args[1], args[3]);
                 } else if (args.length == 2) {
-                    // TODO: add arg[1] in branch list.
                     Repository.checkoutBranch(args[1]);
                 } else {
                     System.out.println("Incorrect operands.");

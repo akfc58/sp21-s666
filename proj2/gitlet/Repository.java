@@ -25,7 +25,7 @@ public class Repository {
     public static final File GITLET_HEAD = Utils.join(GITLET_DIR, "HEAD");
 
 
-    public static SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
+    private static SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
 
 
     /**
@@ -67,7 +67,7 @@ public class Repository {
         String commitSha1 = c.sha1();
         File commitFile = Utils.join(GITLET_COMMITS, commitSha1);
         Utils.writeObject(commitFile, c);
-        Refs.SaveHEAD(commitSha1);
+        Refs.saveHEAD(commitSha1);
         Refs.moveActiveBranch(commitSha1);
     }
 
@@ -122,18 +122,18 @@ public class Repository {
     }
 
     public static void rm(String fileName) {
-        // TODO 1. if fileName is in stage, remove it from stage.toAdd, and save.
-        //  2.if it is in HEAD commit, add fileName to toRemove and remove it in next commit.
-        //  stage it for removal and remove the file from the working directory if the user
-        //  has not already done so (do not remove it unless it is tracked in the current commit).
         Stage e = new Stage();
         Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
         Map<String, String> currCommitContent = currCommit.getCommitContent();
+        File f = Utils.join(CWD, fileName);
         if (e.getToAdd().containsKey(fileName)) {
             e.deleteItemInToAdd(fileName);
             // file in stage area is not tracked, so do not delete it.
-        }else if (currCommitContent != null && currCommitContent.containsKey(fileName)) {
-            String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
+        } else if (currCommitContent != null && currCommitContent.containsKey(fileName)) {
+            String fileContent = "";
+            if (f.exists()) {
+               fileContent = Utils.readContentsAsString(f);
+            }
             String fileBlob = Utils.sha1(fileContent);
             e.removeStage(fileName, fileBlob);
             Utils.restrictedDelete(Utils.join(CWD, fileName));
@@ -149,7 +149,6 @@ public class Repository {
      * Receives commit message, make a new commit according to stage area and old commit.
      */
     public static void commit(String message) {
-        //TODO: Finally, files tracked in the current commit may be untracked in the new commit as a result being staged for removal by the rm command (below).
         if (!GITLET_DIR.exists()) {
             System.out.println("No .gitlet! please check.");
             System.exit(0);
@@ -234,7 +233,6 @@ public class Repository {
      * 2. files that's just staged to add will be set to untracked
      * since the stage area is cleared.
      */
-    //TODO: what happens to toremove in stage? they are just cleared now.
     public static void checkoutBranch(String branch) {
         if (branch.equals(Refs.getActiveBranchName())) {
             System.out.println("No need to checkout the current branch.");
@@ -242,8 +240,8 @@ public class Repository {
         }
         String currCommitID = Refs.getHEAD();
         if (ifOverWrite(currCommitID)) {
-            System.out.println("There is an untracked file in the way;" +
-                    " delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way;"
+                    + " delete it, or add and commit it first.");
             System.exit(0);
         }
         List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
@@ -349,9 +347,6 @@ public class Repository {
      * everything in checked-out commit.
      */
     private static void manipulateCWD(String currID, String checkedOutID) {
-        //TODO :what if : f.txt is committed ,but changed and staged?
-        //TODO: from spec: Any files that are tracked in the current branch
-        // but are not present in the checked-out branch are deleted.
         File currCommitFile = Utils.join(GITLET_COMMITS, currID);
         Commit currCommit = Utils.readObject(currCommitFile, Commit.class);
         Map<String, String> currContent = currCommit.getCommitContent();
@@ -361,9 +356,9 @@ public class Repository {
                 Utils.restrictedDelete(Utils.join(CWD, eachCurrCommitFileName));
             }
         }
-            File checkedOutFile = Utils.join(GITLET_COMMITS, checkedOutID);
-            Commit checkedOutCommit = Utils.readObject(checkedOutFile, Commit.class);
-            Map<String, String> checkedOutContent = checkedOutCommit.getCommitContent();
+        File checkedOutFile = Utils.join(GITLET_COMMITS, checkedOutID);
+        Commit checkedOutCommit = Utils.readObject(checkedOutFile, Commit.class);
+        Map<String, String> checkedOutContent = checkedOutCommit.getCommitContent();
         // restore files in checked-out commit.
         if (checkedOutContent != null) {
             for (String eachCheckedOutFile : checkedOutContent.keySet()) {
@@ -391,12 +386,12 @@ public class Repository {
             System.exit(0);
         }
         if (ifOverWrite(commitID)) {
-            System.out.println("There is an untracked file in the way;" +
-                    " delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way;"
+                    + " delete it, or add and commit it first.");
             System.exit(0);
         }
         manipulateCWD(currCommitID, commitID);
-        Refs.SaveHEAD(commitID);
+        Refs.saveHEAD(commitID);
         Refs.moveActiveBranch(commitID);
         Stage e = new Stage();
         e.clear();
@@ -480,7 +475,7 @@ public class Repository {
      * Displays all gitlet information in given format.
      */
     public static void status() {
-        List<String> active = Utils.plainFilenamesIn(Utils.join(GITLET_REFS,"active"));
+        List<String> active = Utils.plainFilenamesIn(Utils.join(GITLET_REFS, "active"));
         if (active == null) {
             System.out.println("Not in an initialized Gitlet directory.");
             System.exit(0);
@@ -521,6 +516,5 @@ public class Repository {
             System.out.println(untracked);
         }
         System.out.println();
-        //TODO
     }
 }

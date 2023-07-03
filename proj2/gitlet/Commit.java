@@ -7,7 +7,7 @@ import java.util.*;
  *
  *  @author dongliang
  */
-public class Commit implements Serializable, Dumpable{
+public class Commit implements Serializable, Dumpable {
 
     /** The message of this Commit. */
     private String message;
@@ -59,9 +59,6 @@ public class Commit implements Serializable, Dumpable{
     }
 
     public String sha1() {
-        // TODO: is this the right way to do sha1? maybe it's right!
-        //  this is having a universal method for this class to
-        //  calculate a sha1 for each instance.
         return Utils.sha1(Utils.serialize(this));
     }
 

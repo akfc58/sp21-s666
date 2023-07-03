@@ -13,11 +13,9 @@ public class Refs implements Serializable {
 
     /** dir of HEAD. */
     private static final File HEAD_DIR = Utils.join(Repository.GITLET_DIR, "HEAD");
-    /** the refs: HEAD, activeBranch, otherBranch. */
-    //TODO: branches pointer
 
     /** save a given commit's sha1 value which HEAD points at to HEAD_DIR. */
-    public static void SaveHEAD(String head) {
+    public static void saveHEAD(String head) {
         Utils.writeContents(HEAD_DIR, head);
     }
 
@@ -50,7 +48,6 @@ public class Refs implements Serializable {
 
     /** Set new branch, do nothing else. */
     public static void setBranch(String key, String val) {
-        //TODO 1. read otherbranch object. 2.read active branch(HEAD) 3. create a new branch points to HEAD 4.save to file.
         List<String> l = Utils.plainFilenamesIn(Repository.GITLET_REFS);
         if (l.contains(key) || getActiveBranchName() == key) {
             // if new branch exists
@@ -80,8 +77,8 @@ public class Refs implements Serializable {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
         }
-        File f =Utils.join(Repository.GITLET_REFS, key);
-        f.delete(); //TODO careful!
+        File f = Utils.join(Repository.GITLET_REFS, key);
+        f.delete();
     }
 
     /** exchange branch, change HEAD accordingly. */
@@ -90,6 +87,6 @@ public class Refs implements Serializable {
         oldActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, Refs.getActiveBranchName()));
         File newActiveFile = Utils.join(Repository.GITLET_REFS, newActive);
         newActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, "active", newActive));
-        Refs.SaveHEAD(Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, "active", newActive)));
+        Refs.saveHEAD(Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, "active", newActive)));
     }
 }
