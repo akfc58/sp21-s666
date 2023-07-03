@@ -1,6 +1,5 @@
 package gitlet;
 
-import java.io.Console;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -119,10 +118,7 @@ public class Repository {
         File currCommit = Utils.join(GITLET_COMMITS, currHEAD);
         Commit currC = Utils.readObject(currCommit, Commit.class);
         Map<String, String> m = currC.getCommitContent();
-        if (m != null && m.containsKey(fileName) && m.get(fileName).equals(fileBlob)) {
-            return true;
-        }
-        return false;
+        return m != null && m.containsKey(fileName) && m.get(fileName).equals(fileBlob);
     }
 
     public static void rm(String fileName) {
@@ -186,7 +182,20 @@ public class Repository {
      * Checkout File that is in arbitrarly commit, replace it in CWD.
      */
     public static void checkoutCommitFile(String commitBlob, String fileName) {
+        if (commitBlob.length() < Utils.UID_LENGTH) {
+            commitBlob = shortCommitIDHelper(commitBlob);
+        }
         checkoutFileHelper(commitBlob, fileName);
+    }
+
+    public static String shortCommitIDHelper(String shortID) {
+        List<String> commits = Utils.plainFilenamesIn(GITLET_COMMITS);
+        for (String each: commits) {
+            if (each.contains(shortID)) {
+                return each;
+            }
+        }
+        return "NoSuchCommit";
     }
 
     /**
@@ -372,10 +381,10 @@ public class Repository {
 
 
     public static void reset(String commitID) {
+        if (commitID.length() < Utils.UID_LENGTH) {
+            commitID = shortCommitIDHelper(commitID);
+        }
         String currCommitID = Refs.getHEAD();
-        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, currCommitID), Commit.class);
-        Map<String, String> content = currCommit.getCommitContent();
-        List<String> untracked = untrackedFiles(currCommitID);
         List<String> commitList = Utils.plainFilenamesIn(GITLET_COMMITS);
         if (commitList == null || !commitList.contains(commitID)) {
             System.out.println("No commit with that id exists.");
@@ -391,30 +400,6 @@ public class Repository {
         Refs.moveActiveBranch(commitID);
         Stage e = new Stage();
         e.clear();
-    }
-
-    /**
-     * delete every file in CWD, and checkout all files in given commitContent.
-     * WARNING: use this helper iff current CWD files is tracked in old branch!
-     * otherwise, you'll lose data.
-     */
-    private static void checkouthelper(Map<String, String> commitContent, List<String> cwdFileList) {
-        for (String each: cwdFileList) {
-            File eachFile = Utils.join(CWD, each);
-            Utils.restrictedDelete(eachFile);
-            // delete every cwd file.
-        }
-        if (commitContent == null) {
-            // if checked out initial commit, there's nothing to checkout.
-            // continue original operation.
-            return;
-        }
-        for (String eachkey: commitContent.keySet()) {
-            String eachval = commitContent.get(eachkey);
-            String eachContent = Utils.readContentsAsString(Utils.join(GITLET_BLOBS, eachval));
-            Utils.writeContents(Utils.join(CWD, eachkey), eachContent);
-            // checkout all files in given commitContent.
-        }
     }
 
     /**
@@ -496,6 +481,10 @@ public class Repository {
      */
     public static void status() {
         List<String> active = Utils.plainFilenamesIn(Utils.join(GITLET_REFS,"active"));
+        if (active == null) {
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
         List<String> otherBranch = Utils.plainFilenamesIn(GITLET_REFS);
         if (otherBranch != null) {
             Collections.sort(otherBranch);
@@ -505,7 +494,6 @@ public class Repository {
         java.util.Collections.sort(toAdd);
         List<String> toRemove = new ArrayList<>(e.getToRemove().keySet());
         java.util.Collections.sort(toRemove);
-
         System.out.println("=== Branches ===");
         System.out.println("*" + active.get(0));
         // can never be null.
