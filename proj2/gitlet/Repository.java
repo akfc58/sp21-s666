@@ -1,5 +1,6 @@
 package gitlet;
 
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -138,7 +139,8 @@ public class Repository {
 
     public static void rm(String fileName) {
         Stage e = new Stage();
-        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
+        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS,
+                Refs.getHEAD()), Commit.class);
         Map<String, String> currCommitContent = currCommit.getCommitContent();
         File f = Utils.join(CWD, fileName);
         if (e.getToAdd().containsKey(fileName)) {
@@ -204,9 +206,11 @@ public class Repository {
 
     public static String shortCommitIDHelper(String shortID) {
         List<String> commits = Utils.plainFilenamesIn(GITLET_COMMITS);
-        for (String each : commits) {
-            if (each.contains(shortID)) {
-                return each;
+        if (commits != null) {
+            for (String each : commits) {
+                if (each.contains(shortID)) {
+                    return each;
+                }
             }
         }
         return "NoSuchCommit";
@@ -346,17 +350,94 @@ public class Repository {
         return false;
     }
 
-    private static List<String> modifiedFiles() {
-        //TODO: There is an empty line between sections, and the entire status ends in
-        // an empty line as well. Entries should be listed in lexicographic order,
-        // using the Java string-comparison order (the asterisk doesn’t count).
-        // A file in the working directory is “modified but not staged” if it is:
-        //Tracked in the current commit, changed in the working directory, but not staged; or
-        //Staged for addition, but with different contents than in the working directory; or
-        //Staged for addition, but deleted in the working directory; or
-        //Not staged for removal, but tracked in the current commit and
-        // deleted from the working directory.
-        return null;
+    /**
+     * Helper for status listing what's modified. this is for the kind
+     * of "deleted." which are:
+     * Staged for addition, but deleted in the working directory;
+     * Not staged for removal, but tracked in the current commit and
+     * deleted from the working directory.
+     */
+    public static List<String> deleted() {
+        List<String> res = new ArrayList<>();
+        List<String> currFiles = Utils.plainFilenamesIn(CWD);
+        String currCommitID = Refs.getHEAD();
+        Commit currCommit = Utils.readObject(Utils.join(
+                GITLET_COMMITS, currCommitID), Commit.class);
+        Map<String, String> currContent = currCommit.getCommitContent();
+        Stage e = new Stage();
+        Map<String, String> toAdd = e.getToAdd();
+        Map<String, String> toRemove = e.getToRemove();
+        if (currContent != null) {
+            for (String trackedFile : currContent.keySet()) {
+                if ((currFiles != null && !currFiles.contains(trackedFile))
+                        && (toRemove != null
+                        && !toRemove.containsKey(trackedFile))) {
+                    res.add(trackedFile);
+                }
+            }
+        }
+        if (toAdd != null) {
+            for (String stagedFile : toAdd.keySet()) {
+                if (currFiles != null && !currFiles.contains(stagedFile)) {
+                    res.add(stagedFile);
+                }
+            }
+        }
+        return res;
+    }
+
+
+    /**
+     * Helper for status listing what's modified. this is for the kind
+     * of "modified" which are:
+     * Tracked in the current commit, changed in the working directory, but not staged; or
+     * Staged for addition, but with different contents than in the working directory; or
+     */
+    public static List<String> modified() {
+        List<String> res = new ArrayList<>();
+        List<String> currFiles = Utils.plainFilenamesIn(CWD);
+        String currCommitID = Refs.getHEAD();
+        Commit currCommit = Utils.readObject(Utils.join(
+                GITLET_COMMITS, currCommitID), Commit.class);
+        Map<String, String> currContent = currCommit.getCommitContent();
+        Stage e = new Stage();
+        Map<String, String> toAdd = e.getToAdd();
+        if (currContent != null) {
+            for (String trackedFile : currContent.keySet()) {
+                // a file is considered modified
+                // 1. in currentcommit
+                // 2. in CWD
+                // 3. changed(sha1 don't match)
+                // 4. not staged for addtion
+                if ((currFiles != null
+                        && currFiles.contains(trackedFile))
+                        && (!currContent.get(trackedFile).equals(
+                                Utils.sha1(Utils.readContentsAsString(
+                                        Utils.join(CWD, trackedFile)))))
+                        && (toAdd != null
+                        && !toAdd.containsKey(trackedFile))) {
+                    res.add(trackedFile);
+                }
+            }
+        }
+        if (toAdd != null) {
+            for (String stagedFile : toAdd.keySet()) {
+                // a file is considered modified
+                // 1. staged for add
+                // 2. but changed(sha1 don't match
+                if (currFiles != null
+                        && currFiles.contains(stagedFile)
+                        && (!toAdd.get(
+                                stagedFile).equals(
+                                        Utils.sha1(
+                                                Utils.readContentsAsString(
+                                                        Utils.join(
+                                                                CWD, stagedFile)))))) {
+                    res.add(stagedFile);
+                }
+            }
+        }
+        return res;
     }
 
     /**
@@ -526,7 +607,14 @@ public class Repository {
         }
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
-        //TODO
+        List<String> deletedFiles = deleted();
+        List<String> modifiedFiles = modified();
+        for (String file: deletedFiles) {
+            System.out.println(file + " (deleted)");
+        }
+        for (String file: modifiedFiles) {
+            System.out.println(file + " (modified)");
+        }
         System.out.println();
         System.out.println("=== Untracked Files ===");
         for (String untracked : untrackedFiles(Refs.getHEAD())) {
