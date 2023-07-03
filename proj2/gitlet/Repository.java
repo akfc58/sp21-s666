@@ -136,7 +136,9 @@ public class Repository {
             e.deleteItemInToAdd(fileName);
             // file in stage area is not tracked, so do not delete it.
         }else if (currCommitContent != null && currCommitContent.containsKey(fileName)) {
-            e.removeStage(fileName);
+            String fileContent = Utils.readContentsAsString(Utils.join(CWD, fileName));
+            String fileBlob = Utils.sha1(fileContent);
+            e.removeStage(fileName, fileBlob);
             Utils.restrictedDelete(Utils.join(CWD, fileName));
             // add fileName to toRemove. Deal with actual removal in Commit constructor.
         } else {
@@ -166,7 +168,7 @@ public class Repository {
         }
         Commit c = new Commit(message, Refs.getHEAD()); // old HEAD is always where the parent is.
         writeCommit(c);
-        // every commit changes HEAD, so deal with wirte commit in Repo, NOT in commit class.
+        // every commit changes HEAD, so deal with write commit in Repo, NOT in commit class.
         e.clear(); // clear stage area after commit.
     }
 
@@ -175,7 +177,7 @@ public class Repository {
      * Get current commit using HEAD in .gitlet.
      */
     public static void checkoutFile(String fileName) {
-        String currHEAD = Utils.readContentsAsString(GITLET_HEAD);
+        String currHEAD = Refs.getHEAD();
         checkoutFileHelper(currHEAD, fileName);
     }
 
@@ -215,57 +217,150 @@ public class Repository {
      * 1. it is not the active branch
      * 2. every file in cwd is tracked in current commit.
      * 3. the checked-out branch actually exists.
+     * then, check out all files in BRANCH commit while delete
+     * everything tracked in current commit.
+     * change HEAD, active branch, and other branch.
+     * WARNING: 1. files that's not tracked won't be affected.
+     * 2. files that's just staged to add will be set to untracked
+     * since the stage area is cleared.
      */
+    //TODO: what happens to toremove in stage? they are just cleared now.
     public static void checkoutBranch(String branch) {
         if (branch.equals(Refs.getActiveBranchName())) {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
-        List<String> cwdFileList = Utils.plainFilenamesIn(CWD);
-        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
-        Map<String, String> currCommitContent = currCommit.getCommitContent();
-        for (String eachCWDFile: cwdFileList) {
-            if (!currCommitContent.containsKey(eachCWDFile)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                System.exit(0);
-            }
+        String currCommitID = Refs.getHEAD();
+        if (!untrackedFiles(currCommitID).isEmpty()) {
+            System.out.println("There is an untracked file in the way;" +
+                    " delete it, or add and commit it first.");
+            System.exit(0);
         }
         List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
-        if (branchList == null || branchList.isEmpty() || !branchList.contains(branch)) {
+        if (branchList == null || !branchList.contains(branch)) {
             System.out.println("No such branch exists.");
             System.exit(0);
             // if there's no other branches, then checkout branch does not exist.
         }
-        //TODO: order matters! check!!
-        Commit branchCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getBranch(branch)), Commit.class);
-        Map<String, String> branchCommitContent = branchCommit.getCommitContent();
-        checkouthelper(branchCommitContent, cwdFileList);
-        // clean CWD, and checkout real files in branchCommitContent.
+        String checkedOutCommitID = Refs.getBranch(branch);
+        manipulateCWD(currCommitID, checkedOutCommitID);
         Refs.changeActiveBranch(branch);
-        Stage e =new Stage();
+        Stage e = new Stage();
         e.clear();
-
     }
 
-    public static void reset(String commitID) {
-        List<String> cwdFileList = Utils.plainFilenamesIn(CWD);
-        Commit targetCommit = Utils.readObject(Utils.join(GITLET_COMMITS, commitID), Commit.class);
-        Map<String, String> targetCommitContent = targetCommit.getCommitContent();
-        Commit currCommit = Utils.readObject(Utils.join(GITLET_COMMITS, Refs.getHEAD()), Commit.class);
-        Map<String, String> currCommitContent = currCommit.getCommitContent();
-        for (String eachCWDFile: cwdFileList) {
-            if (!currCommitContent.containsKey(eachCWDFile)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                System.exit(0);
+    /**
+     * iff there's a file in CWD that's either:
+     * not in commit COMMITID or staged to add or
+     * staged to remove but changed without gitlet's knowledge.
+     * return list of untracked files.
+     */
+    private static List<String> untrackedFiles(String commitID) {
+        File commitFile = Utils.join(GITLET_COMMITS, commitID);
+        Commit c = Utils.readObject(commitFile, Commit.class);
+        Map<String, String> content = c.getCommitContent();
+        List<String> CWDFiles = Utils.plainFilenamesIn(CWD);
+        List<String> untrackedFiles = new ArrayList<>();
+
+        Stage e = new Stage();
+        Map<String, String> toAdd = e.getToAdd();
+        Map<String, String> toRemove = e.getToRemove();
+
+        if (CWDFiles == null) {
+            return untrackedFiles;
+        }
+        for (String each : CWDFiles) {
+            // A file is tracked when:
+            // 1. it's name is in current commit OR
+            // 2. in staged toAdd.
+            // 3. in staged toRemove, and sha1 equals.
+            // important: a file tracked but have different content
+            // is considered MODIFIED!
+            boolean tracked = false;
+            if (content != null && content.containsKey(each)) {
+                tracked = true;
+            }
+            if (toAdd != null && toAdd.containsKey(each)) {
+                tracked = true;
+            }
+            File eachDir = Utils.join(CWD, each);
+            if (toRemove != null && toRemove.containsKey(each)
+                    && toRemove.get(each).equals(
+                    Utils.sha1(Utils.readContentsAsString(eachDir)))) {
+                tracked = true;
+            }
+            if (!tracked) {
+                untrackedFiles.add(each);
             }
         }
+        return untrackedFiles;
+    }
+
+    private static List<String> modifiedFiles() {
+        //TODO: There is an empty line between sections, and the entire status ends in
+        // an empty line as well. Entries should be listed in lexicographic order,
+        // using the Java string-comparison order (the asterisk doesn’t count).
+        // A file in the working directory is “modified but not staged” if it is:
+        //Tracked in the current commit, changed in the working directory, but not staged; or
+        //Staged for addition, but with different contents than in the working directory; or
+        //Staged for addition, but deleted in the working directory; or
+        //Not staged for removal, but tracked in the current commit and deleted from the working directory.
+        return null;
+    }
+
+    /**
+     * delete every thing in CWD that is in current commit, and check out
+     * everything in checked-out commit.
+     */
+    private static void manipulateCWD(String currID, String checkedOutID) {
+        //TODO :what if : f.txt is committed ,but changed and staged?
+        //TODO: from spec: Any files that are tracked in the current branch
+        // but are not present in the checked-out branch are deleted.
+        File currCommitFile = Utils.join(GITLET_COMMITS, currID);
+        Commit currCommit = Utils.readObject(currCommitFile, Commit.class);
+        Map<String, String> currContent = currCommit.getCommitContent();
+        // delete files that's in current commit in CWD.
+        if (currContent != null) {
+            for (String eachCurrCommitFileName : currContent.keySet()) {
+                Utils.restrictedDelete(Utils.join(CWD, eachCurrCommitFileName));
+            }
+        }
+            File checkedOutFile = Utils.join(GITLET_COMMITS, checkedOutID);
+            Commit checkedOutCommit = Utils.readObject(checkedOutFile, Commit.class);
+            Map<String, String> checkedOutContent = checkedOutCommit.getCommitContent();
+        // restore files in checked-out commit.
+        if (checkedOutContent != null) {
+            for (String eachCheckedOutFile : checkedOutContent.keySet()) {
+                // get blob for target file.
+                String blobName = checkedOutContent.get(eachCheckedOutFile);
+                // get file content(stored in blob as string).
+                String blobFileContent = Utils.readContentsAsString(
+                        Utils.join(GITLET_BLOBS, blobName));
+                // write content to CWD with name stored in checked-out commit.
+                Utils.writeContents(Utils.join(CWD, eachCheckedOutFile),
+                        blobFileContent);
+            }
+        }
+    }
+
+
+    public static void reset(String commitID) {
+        String currCommitID = Refs.getHEAD();
+        if (!untrackedFiles(currCommitID).isEmpty()) {
+            System.out.println("There is an untracked file in the way;" +
+                    " delete it, or add and commit it first.");
+            System.exit(0);
+        }
         List<String> commitList = Utils.plainFilenamesIn(GITLET_COMMITS);
-        if (!commitList.contains(commitID)) {
+        if (commitList == null || !commitList.contains(commitID)) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
-            // if there's no other branches, then checkout branch does not exist.
         }
-        checkouthelper(targetCommitContent, cwdFileList);
+        manipulateCWD(currCommitID, commitID);
+        Refs.SaveHEAD(commitID);
+        Refs.moveActiveBranch(commitID);
+        Stage e = new Stage();
+        e.clear();
     }
 
     /**
@@ -322,13 +417,15 @@ public class Repository {
      */
     public static void globalLog() {
         List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
-        for (String commitSha1: allCommit) {
-            File f = Utils.join(GITLET_COMMITS, commitSha1);
-            Commit c = Utils.readObject(f, Commit.class);
-            Date d = c.getTimestamp();
-            String content = "===\n" + "commit " + commitSha1 + "\n"
-                    + "Date: " + formatter.format(d) + "\n" + c.getMessage() + "\n\n";
-            System.out.print(content);
+        if (allCommit != null) {
+            for (String commitSha1: allCommit) {
+                File f = Utils.join(GITLET_COMMITS, commitSha1);
+                Commit c = Utils.readObject(f, Commit.class);
+                Date d = c.getTimestamp();
+                String content = "===\n" + "commit " + commitSha1 + "\n"
+                        + "Date: " + formatter.format(d) + "\n" + c.getMessage() + "\n\n";
+                System.out.print(content);
+            }
         }
     }
 
@@ -338,13 +435,15 @@ public class Repository {
     public static void find(String targetMessage) {
         List<String> allCommit = Utils.plainFilenamesIn(GITLET_COMMITS);
         boolean haveResult = false;
-        for (String commitSha1: allCommit) {
-            File f = Utils.join(GITLET_COMMITS, commitSha1);
-            Commit c = Utils.readObject(f, Commit.class);
-            String commitMessage = c.getMessage();
-            if (targetMessage.equals(commitMessage)) {
-                System.out.println(commitSha1);
-                haveResult = true;
+        if (allCommit != null) {
+            for (String commitSha1: allCommit) {
+                File f = Utils.join(GITLET_COMMITS, commitSha1);
+                Commit c = Utils.readObject(f, Commit.class);
+                String commitMessage = c.getMessage();
+                if (targetMessage.equals(commitMessage)) {
+                    System.out.println(commitSha1);
+                    haveResult = true;
+                }
             }
         }
         if (!haveResult) {
@@ -368,17 +467,22 @@ public class Repository {
     public static void status() {
         List<String> active = Utils.plainFilenamesIn(Utils.join(GITLET_REFS,"active"));
         List<String> otherBranch = Utils.plainFilenamesIn(GITLET_REFS);
-        java.util.Collections.sort(otherBranch);
+        if (otherBranch != null) {
+            Collections.sort(otherBranch);
+        }
         Stage e = new Stage();
         List<String> toAdd = new ArrayList<>(e.getToAdd().keySet());
         java.util.Collections.sort(toAdd);
-        List<String> toRemove = new ArrayList<>(e.getToRemove());
+        List<String> toRemove = new ArrayList<>(e.getToRemove().keySet());
         java.util.Collections.sort(toRemove);
 
         System.out.println("=== Branches ===");
         System.out.println("*" + active.get(0));
-        for (String branch: otherBranch) {
-            System.out.println(branch);
+        // can never be null.
+        if (otherBranch != null) {
+            for (String branch: otherBranch) {
+                System.out.println(branch);
+            }
         }
         System.out.println();
         System.out.println("=== Staged Files ===");
@@ -395,6 +499,9 @@ public class Repository {
         //TODO
         System.out.println();
         System.out.println("=== Untracked Files ===");
+        for (String untracked: untrackedFiles(Refs.getHEAD())) {
+            System.out.println(untracked);
+        }
         System.out.println();
         //TODO
     }

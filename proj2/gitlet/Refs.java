@@ -92,5 +92,4 @@ public class Refs implements Serializable {
         newActiveFile.renameTo(Utils.join(Repository.GITLET_REFS, "active", newActive));
         Refs.SaveHEAD(Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, "active", newActive)));
     }
-    //TODO set other branch. getter of branch.
 }

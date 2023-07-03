@@ -12,7 +12,7 @@ public class Stage implements Serializable, Dumpable {
 
     private static final File STAGE_DIR = Utils.join(Repository.GITLET_DIR, "stage");
     private Map<String, String> toAdd = new TreeMap<>();
-    private Set<String> toRemove = new TreeSet<>();
+    private Map<String, String> toRemove = new TreeMap<>();
 
     /** new runtime stage instance always keep track of  what's persisted before. */
     public Stage() {
@@ -26,15 +26,15 @@ public class Stage implements Serializable, Dumpable {
         saveStage();
     }
 
-    public void removeStage(String key) {
+    public void removeStage(String key, String val) {
         // same logic as addStage().
-        toRemove.add(key);
+        toRemove.put(key, val);
         saveStage();
     }
 
     public void clear() {
         toAdd = new TreeMap<>();
-        toRemove = new TreeSet<>();
+        toRemove = new TreeMap<>();
         Utils.writeObject(STAGE_DIR, this);
     }
 
@@ -77,7 +77,7 @@ public class Stage implements Serializable, Dumpable {
     public Map<String, String> getToAdd() {
         return toAdd;
     }
-    public Set<String> getToRemove() {
+    public Map<String, String> getToRemove() {
         return toRemove;
     }
 
