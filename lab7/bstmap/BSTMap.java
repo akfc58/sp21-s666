@@ -1,7 +1,5 @@
 package bstmap;
 
-import edu.princeton.cs.algs4.BST;
-
 import java.util.*;
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private BSTNode root; // root of BSTMap
@@ -128,7 +126,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     @Override
     public V remove(K key) {
         root = removeHelper(key, root);
-        return n.val;
+        return root.val;
     }
 
     private BSTNode removeHelper(K key, BSTNode n) {
