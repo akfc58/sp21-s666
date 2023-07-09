@@ -160,12 +160,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         Node newNode = createNode(key, value);
         int pos = positionHelper(key);
         if (buckets[pos] == null) {
-            Collection<Node> bucket = createBucket();
-            buckets[pos] = bucket;
-            bucket.add(newNode);
-            keySet.add(newNode.key);
-            N += 1;
-            return;
+            buckets[pos] = createBucket();
         }
         for (Node each: buckets[pos]) {
             if (each.key.equals(key)) {
@@ -176,6 +171,29 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         buckets[pos].add(newNode);
         keySet.add(newNode.key);
         N += 1;
+        if ((float) N/buckets.length > max) {
+            resize();
+        }
+    }
+
+
+    private void resize() {
+        // save oldBuckets, create resized newBuckets, and put everything in.
+        Collection<Node>[] oldBuckets = buckets;
+        buckets = createTable(buckets.length * 2);
+        for (int index = 0; index < oldBuckets.length; index++){
+            if (oldBuckets[index] == null) {
+                continue; // skip null.
+            }
+            for (Node each: oldBuckets[index]) {
+                // put uses buckets by default.
+                int pos = positionHelper(each.key);
+                if (buckets[pos] == null) {
+                    buckets[pos] = createBucket();
+                }
+                buckets[pos].add(each);
+            }
+        }
     }
 
     private int positionHelper(K key) {
@@ -187,14 +205,39 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return keySet;
     }
 
+    /**
+     * remove item, delete corresponding key in keySet, minus N.
+     * @param key
+     * @return
+     */
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        V res = get(key);
+        if (res == null) {
+            return null;
+        }
+        int pos = positionHelper(key);
+        Collection<Node> c = buckets[pos];
+        for (Node n: c) {
+            if (n.key == key) {
+                res = n.value;
+                c.remove(n);
+                keySet.remove(key);
+                N -= 1;
+            }
+        }
+        return res;
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (get(key) == null) {
+            return null;
+        }
+        if (get(key) != value) {
+            return null;
+        }
+        return remove(key);
     }
 
     @Override
