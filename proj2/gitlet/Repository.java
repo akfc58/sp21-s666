@@ -244,7 +244,7 @@ public class Repository {
     /**
      * Checkout branch iff:
      * 1. it is not the active branch
-     * 2. every file in cwd is tracked in current commit.
+     * 2. every file in cwd is tracked in current commit
      * 3. the checked-out branch actually exists.
      * then, check out all files in BRANCH commit while delete
      * everything tracked in current commit.
@@ -621,5 +621,141 @@ public class Repository {
             System.out.println(untracked);
         }
         System.out.println();
+    }
+
+    /**
+     * merge givenBranch into currentBranch(HEAD).
+     */
+    public static void merge(String givenBranch) {
+
+        // check If an untracked file in the current commit would be
+        // overwritten or deleted by the merge.
+        String currCommitID = Refs.getHEAD();
+        if (!untrackedFiles(currCommitID).isEmpty()) {
+            System.out.println("There is an untracked file in the way;"
+                    + " delete it, or add and commit it first.");
+            System.exit(0);
+        }
+        // check If there are staged additions or removals present.
+        Stage e = new Stage();
+        if (!e.getToAdd().isEmpty() || !e.getToRemove().isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+        // check If a branch with the given name does not exist.
+        List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
+        String activeBranch = Refs.getActiveBranchName();
+        if (branchList == null || !branchList.contains(givenBranch) && !activeBranch.equals(givenBranch)) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        // check If attempting to merge a branch with itself.
+        String currHEAD = Refs.getHEAD();
+        if (currHEAD.equals(Refs.getBranch(givenBranch))) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+
+
+
+
+
+        // 3 items of type commit: ancestorID, currentHEAD, givenBranchID.
+        String ancestorID = getLastAnsector(givenBranch);
+        String givenBranchID = Refs.getBranch(givenBranch);
+
+        Map<String, String> ancestorMap = getBlobMapFromCommit(ancestorID);
+        Map<String, String> currentHEADMap = getBlobMapFromCommit(currHEAD);
+        Map<String, String> givenBranchMap = getBlobMapFromCommit(givenBranchID);
+
+        // case: no conflict.
+        Set<String> wholeSet = new TreeSet<>();
+        wholeSet.addAll(givenBranchMap.values());
+        wholeSet.addAll(currentHEADMap.values());
+
+        if (givenBranchMap.values().size() + currentHEADMap.values().size() == wholeSet.size()) {
+            //Identical sha-1, no conflict.
+            for (String key: currentHEADMap.keySet()) {
+                e.addStage(key, currentHEADMap.get(key));
+            }
+            for (String key: givenBranchMap.keySet()) {
+                String blobName = givenBranchMap.get(key);
+                File inFile = Utils.join(GITLET_BLOBS, blobName);
+                File outFile = Utils.join(CWD, key);
+                Utils.restrictedDelete(outFile);
+                // delete the target file in CWD. if it is not there, won't error.
+                Utils.writeContents(outFile, Utils.readContentsAsString(inFile));
+                e.addStage(key, givenBranchMap.get(key));
+            }
+            for (String key : ancestorMap.keySet()) {
+                e.deleteItemInToAdd(key);
+                e.removeStage(key, ancestorMap.get(key));
+                Utils.restrictedDelete(Utils.join(CWD, key));
+
+
+
+            }
+            commit("Merged " + givenBranch + " into " + Refs.getActiveBranchName() + ".");
+
+        }
+
+
+
+
+
+
+
+    }
+
+    /**
+     * find the split spot. Might be the inital commit!
+     * MUST use tree map to keep the order.
+     */
+    private static String getLastAnsector(String givenBranch) {
+        Map<String, Integer> ansectorsOfActiveBranch = getAllAnsectors(Refs.getActiveBranchName());
+        Map<String, Integer> ansectorsOfGivenBranch = getAllAnsectors(givenBranch);
+        for (String key : ansectorsOfActiveBranch.keySet()) {
+            if (ansectorsOfGivenBranch.containsKey(key)) {
+                // System.out.println("the latest ancestor is:");
+                // System.out.println(key);
+                return key;
+            }
+        }
+        return "no ansector.";
+    }
+
+    /**
+     * get All ancestors of a branch b in the form of a Map form depth
+     * to ancestor's commitID.
+     */
+    private static Map<String, Integer> getAllAnsectors(String branch) {
+        Map<String, Integer> ancestors = new TreeMap<>();
+
+        String targetCommitID;
+        targetCommitID = Refs.getBranch(branch);
+        int depth = 0;
+
+        ancestors.put(targetCommitID, depth);
+        Commit targetCommit;
+        File commitFile;
+        commitFile = Utils.join(GITLET_COMMITS, targetCommitID);
+        targetCommit = Utils.readObject(commitFile, Commit.class);
+        while (!targetCommit.getMessage().equals("initial commit")) {
+            targetCommitID = targetCommit.getParent();
+            commitFile = Utils.join(GITLET_COMMITS, targetCommitID);
+            targetCommit = Utils.readObject(commitFile, Commit.class);
+            depth += 1;
+            ancestors.put(targetCommitID, depth);
+        }
+        return ancestors;
+    }
+
+    /**
+     * get all file blobs from a given commit.
+     */
+    private static Map<String, String> getBlobMapFromCommit(String commitID) {
+        // get the map of blobs
+        Commit c = Utils.readObject(Utils.join(GITLET_COMMITS, commitID), Commit.class);
+        return (Map<String, String>) c.getCommitContent();
     }
 }

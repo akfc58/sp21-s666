@@ -15,7 +15,7 @@ public class Commit implements Serializable, Dumpable {
     private Date timestamp;
     /** The parent of this commit. Represented in sha-1 value. */
     private String parent;
-    /** The blobs Set of this commit. */
+    /** The blobs Map of this commit. MUST be a TreeMap.*/
     private Map<String, String> commitContent = new TreeMap<>();
 
     public Commit(String m, String p) {

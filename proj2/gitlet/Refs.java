@@ -58,6 +58,9 @@ public class Refs implements Serializable {
     }
 
     public static String getBranch(String key) {
+        if (getActiveBranchName().equals(key)) {
+            return Utils.readContentsAsString(Utils.join(Utils.join(Repository.GITLET_REFS, "active"), key));
+        }
         return Utils.readContentsAsString(Utils.join(Repository.GITLET_REFS, key));
     }
 
