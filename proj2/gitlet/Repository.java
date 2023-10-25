@@ -645,7 +645,8 @@ public class Repository {
         // check If a branch with the given name does not exist.
         List<String> branchList = Utils.plainFilenamesIn(GITLET_REFS);
         String activeBranch = Refs.getActiveBranchName();
-        if (branchList == null || !branchList.contains(givenBranch) && !activeBranch.equals(givenBranch)) {
+        if (branchList == null || !branchList.contains(givenBranch)
+                && !activeBranch.equals(givenBranch)) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
         }
@@ -668,57 +669,63 @@ public class Repository {
         Map<String, String> currentHEADMap = getBlobMapFromCommit(currHEAD);
         Map<String, String> givenBranchMap = getBlobMapFromCommit(givenBranchID);
 
-        // case: no conflict.
-        Set<String> wholeSet = new TreeSet<>();
-        wholeSet.addAll(givenBranchMap.values());
-        wholeSet.addAll(currentHEADMap.values());
-
-        if (givenBranchMap.values().size() + currentHEADMap.values().size() == wholeSet.size()) {
-            //Identical sha-1, no conflict.
-            for (String key: currentHEADMap.keySet()) {
-                e.addStage(key, currentHEADMap.get(key));
-            }
-            for (String key: givenBranchMap.keySet()) {
-                String blobName = givenBranchMap.get(key);
-                File inFile = Utils.join(GITLET_BLOBS, blobName);
-                File outFile = Utils.join(CWD, key);
-                Utils.restrictedDelete(outFile);
-                // delete the target file in CWD. if it is not there, won't error.
-                Utils.writeContents(outFile, Utils.readContentsAsString(inFile));
-                e.addStage(key, givenBranchMap.get(key));
-            }
-            for (String key : ancestorMap.keySet()) {
-                e.deleteItemInToAdd(key);
-                e.removeStage(key, ancestorMap.get(key));
-                Utils.restrictedDelete(Utils.join(CWD, key));
-
-
-
-            }
-            commit("Merged " + givenBranch + " into " + Refs.getActiveBranchName() + ".");
-
+        for (String key : currentHEADMap.keySet()) {
+            e.addStage(key, currentHEADMap.get(key));
         }
 
+        for (String key : givenBranchMap.keySet()) {
+            String blobName = givenBranchMap.get(key);
+            File inFile = Utils.join(GITLET_BLOBS, blobName);
+            File outFile = Utils.join(CWD, key);
+            Utils.restrictedDelete(outFile);
+            // delete the target file in CWD. if it is not there, won't error.
+            Utils.writeContents(outFile, Utils.readContentsAsString(inFile));
+            e.addStage(key, givenBranchMap.get(key));
 
-
-
-
-
-
+        }
+        for (String key : ancestorMap.keySet()) {
+            e.deleteItemInToAdd(key);
+            e.removeStage(key, ancestorMap.get(key));
+            Utils.restrictedDelete(Utils.join(CWD, key));
+        }
+        for (String key : givenBranchMap.keySet()) {
+            if (currentHEADMap.containsKey(key)) {
+                System.out.println("Encountered a merge conflict");
+                File currentFile = Utils.join(GITLET_BLOBS, currentHEADMap.get(key));
+                String currentContent = Utils.readContentsAsString(currentFile);
+                File givenFile = Utils.join(GITLET_BLOBS, givenBranchMap.get(key));
+                String givenContent = Utils.readContentsAsString(givenFile);
+                File outfile = Utils.join(CWD, key);
+                String conflictContent = null;
+                conflictContent = "<<<<<<< HEAD\n" + currentContent
+                        + "=======\n" + givenContent + ">>>>>>>\n";
+                Utils.writeContents(outfile, conflictContent);
+                e.addStage(key, Utils.sha1(conflictContent));
+                e.deleteItemInToRemove(key);
+            }
+        }
+        commit("Merged " + givenBranch + " into " + Refs.getActiveBranchName() + ".");
     }
+
+
+
+
+
+
+
 
     /**
      * find the split spot. Might be the inital commit!
      * MUST use tree map to keep the order.
      */
     private static String getLastAnsector(String givenBranch) {
-        Map<String, Integer> ansectorsOfActiveBranch = getAllAnsectors(Refs.getActiveBranchName());
-        Map<String, Integer> ansectorsOfGivenBranch = getAllAnsectors(givenBranch);
-        for (String key : ansectorsOfActiveBranch.keySet()) {
-            if (ansectorsOfGivenBranch.containsKey(key)) {
-                // System.out.println("the latest ancestor is:");
-                // System.out.println(key);
-                return key;
+        Map<Integer, String> ansectorsOfActiveBranch = getAllAnsectors(Refs.getActiveBranchName());
+        Map<Integer, String> ansectorsOfGivenBranch = getAllAnsectors(givenBranch);
+        for (String id1 : ansectorsOfActiveBranch.values()) {
+            for (String id2 : ansectorsOfGivenBranch.values()) {
+                if (id1.equals(id2)) {
+                    return id1;
+                }
             }
         }
         return "no ansector.";
@@ -728,14 +735,14 @@ public class Repository {
      * get All ancestors of a branch b in the form of a Map form depth
      * to ancestor's commitID.
      */
-    private static Map<String, Integer> getAllAnsectors(String branch) {
-        Map<String, Integer> ancestors = new TreeMap<>();
+    private static Map<Integer, String> getAllAnsectors(String branch) {
+        Map<Integer, String> ancestors = new TreeMap<>();
 
         String targetCommitID;
         targetCommitID = Refs.getBranch(branch);
         int depth = 0;
 
-        ancestors.put(targetCommitID, depth);
+        ancestors.put(depth, targetCommitID);
         Commit targetCommit;
         File commitFile;
         commitFile = Utils.join(GITLET_COMMITS, targetCommitID);
@@ -745,7 +752,7 @@ public class Repository {
             commitFile = Utils.join(GITLET_COMMITS, targetCommitID);
             targetCommit = Utils.readObject(commitFile, Commit.class);
             depth += 1;
-            ancestors.put(targetCommitID, depth);
+            ancestors.put(depth, targetCommitID);
         }
         return ancestors;
     }
