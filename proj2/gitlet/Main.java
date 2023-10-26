@@ -18,6 +18,7 @@ public class Main {
             case "init":
                 validateNumArgs(args, 1);
                 Repository.init();
+                // break is necessary here because otherwise every case got executed.
                 break;
             case "add":
                 validateNumArgs(args, 2);
